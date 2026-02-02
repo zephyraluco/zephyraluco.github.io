@@ -7,7 +7,7 @@ import { getBlogCollection, sortMDByDate } from 'astro-pure/server'
 import { Button } from 'astro-pure/user'
 import PageLayout from '@/layouts/ContentLayout.astro'
 
-import notesContents from './NotesContents.astro'
+import NotesContents from './NotesContents.astro'
 
 export const prerender = true
 
@@ -33,7 +33,7 @@ const editPath = `https://github.com/cworld1/astro-theme-pure/edit/main/${post.f
 <PageLayout meta={{ description, title }} back='/notes'>
   <Fragment slot='sidebar'>
     {!!headings.length && <TOC {headings} />}
-    <notesContents class='notes-toc block mt-3' />
+    <NotesContents class='notes-toc block mt-3' />
   </Fragment>
 
   <Fragment slot='header'>
@@ -54,7 +54,7 @@ const editPath = `https://github.com/cworld1/astro-theme-pure/edit/main/${post.f
 
         /* Show more notes collapse on small screen */
         // <Collapse class='md:hidden' title='See more notes'>
-        //   <notesContents title={false} />
+        //   <NotesContents title={false} />
         // </Collapse>
     }
   </Fragment>
@@ -70,7 +70,7 @@ const editPath = `https://github.com/cworld1/astro-theme-pure/edit/main/${post.f
     </Button>
     {/* Show notes contents */}
     <div class='rounded-xl border px-4 py-3 mt-3 sm:py-4 md:mt-6'>
-      <notesContents />
+      <NotesContents />
     </div>
   </div>
 </PageLayout>
