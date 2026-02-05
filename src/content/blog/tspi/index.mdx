@@ -1,0 +1,88 @@
+---
+title: 泰山派 armbian系统编译
+publishDate: 2025-10-31
+description: '泰山派非官方系统烧录'
+tags:
+  - 泰山派
+  - armbian
+# heroImage: { src: '/images/thumbnail.jpg', color: '#4891B2' }
+language: '中文'
+---
+
+import { Aside } from 'astro-pure/user'
+
+## 前言
+
+1. 这篇 blog 主要是记录泰山派系统编译及烧录过程
+2. 官方烧录教程：[https://wiki.lckfb.com/zh-hans/tspi-rk3566/system-usage/img-download.html](https://wiki.lckfb.com/zh-hans/tspi-rk3566/system-usage/img-download.html)
+
+<Aside type='danger' title='危险'>
+  烧录armbian系统后，后续将无法进入Loader模式，只能使用MASKROM模式
+</Aside>
+
+## armbian 镜像构建
+
+### 环境准备
+
+- 宿主系统:Ubuntu 24.04
+- Armbian Linux 构建框架:[https://github.com/armbian/build](https://github.com/armbian/build)
+
+### 镜像编译
+
+clone 项目仓库，并进入该路径:
+
+```bash
+git clone https://github.com/armbian/build.git armbian
+cd armbian
+```
+
+运行编译脚本,进入 menuconfig 界面:
+
+```bash
+/images/compile.sh BOARD=lckfb-taishanpi
+```
+
+选择是否修改内核:  
+![kernel config](/images/tspi-1.png)
+
+选择 linux 分支:  
+![kernel branch](/images/tspi-2.png)
+
+选择需要编译的根文件系统:  
+![rootfs](/images/tspi-3.png)
+
+选择是否带桌面环境:  
+![alt text](/images/tspi-4.png)
+
+后续按需选择，设置完参数后会自动进行编译，等待完成即可。
+
+<Aside type='caution' title='注意'>
+  如果编译失败则可能是缺少环境导致的，可以运行以下命令:  
+  `sudo apt install -y software-properties-common python3-pip`
+</Aside>
+
+## 镜像烧录
+
+### 工具准备
+
+- 烧录工具: [RKDevTool v2.86](https://dl.radxa.com/tools/windows/RKDevTool_Release_v2.86.zip)
+- 救砖Boot文件: [MiniLoaderAll.bin](/assets/MiniLoaderAll.bin)
+- 烧录固件: armbian/output.目录下的img文件
+
+### 开始烧录
+
+解压并运行烧录工具，按照官方文档进入Loader/MASKROM模式，选择烧录固件:
+
+<Aside type='caution' title='注意'>
+  进入Loader/MASKROM模式的方法可以参考官方文档，或者直接搜索相关教程
+</Aside>
+
+![alt text](/images/RKDevTool-1.png)
+
+点击执行按钮，等待固件下载完成:  
+![alt text](/images/RKDevTool-2.png)
+
+MASKROM模式下烧录可能会出现下载失败的情况，这个时候就需要断开连接，重新进入MASKROM模式并下载Boot文件:  
+![alt text](/images/RKDevTool-3.png)
+
+等待Boot文件烧录完成后重新下载镜像即可。
