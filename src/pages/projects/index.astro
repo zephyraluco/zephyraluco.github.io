@@ -13,15 +13,13 @@ import wechat from '@/assets/wechat-qrcode.jpg'
 const headings = [
   { depth: 2, slug: 'programs', text: 'Programs' },
   { depth: 2, slug: 'learnings', text: 'Learnings' },
-  { depth: 2, slug: 'others', text: 'Others' },
-  { depth: 2, slug: 'gpg-signature', text: 'GPG Signature' },
-  { depth: 2, slug: 'sponsorship', text: 'Sponsorship' }
+  { depth: 2, slug: 'others', text: 'Others' }
 ]
 ---
 
 <PageLayout title='Projects' {headings} view>
   {/* About astro-pure */}
-  <div class='not-prose flex justify-center'>
+  <!-- <div class='not-prose flex justify-center'>
     <a
       href='/docs/advanced/about' target='_blank'
       class='flex items-center gap-x-3 rounded-full border bg-background px-4 py-2 text-sm shadow-sm transition-shadow hover:shadow-md'
@@ -29,7 +27,7 @@ const headings = [
       <span class='size-2 rounded-full bg-green-400'></span>
       <p class='font-medium text-muted-foreground'>About Astro-Theme-Pure Project</p>
     </a>
-  </div>
+  </div> -->
   <p>Github Activities:</p>
   <p>
     <Image
@@ -39,13 +37,13 @@ const headings = [
       loading='lazy'
     />
   </p>
-  <p>
+  <!-- <p>
     If you think it would be useful or interesting to collaborate on a project, you can donate to
     support my work or contact me to discuss a project.
   </p>
   <Button title='Checkout sponsorship' class='w-fit' href='#sponsorship'>
     <Icon class='size-5' name='receive-money' slot='before' />
-  </Button>
+  </Button> -->
 
   <h2 id='programs'>Programs</h2>
   <ProjectSection
