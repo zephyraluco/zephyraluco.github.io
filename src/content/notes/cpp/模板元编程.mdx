@@ -1,0 +1,106 @@
+---
+title: '模板元编程'
+description: 'C++模板元编程相关问题'
+order: 3
+---
+## DST推导规则
+1. 当模板参数列表中没有非类型模板参数时，编译器会根据函数参数的类型来推导模板参数。
+
+
+## 函数模板特化
+
+```c++
+#include <vector>
+#include <iostream>
+using namespace std;
+// 函数模板
+template<class T,class N> void compare(T num1,T num2){
+    cout<<"standard function template"<<endl;
+    if(num1>num2)
+    {
+        cout<<"num1:"<<num1<<"> num2:"<<num2<<endl;
+    }
+    else
+    {
+        cout<<"num1:"<<num1<<"<= num2:"<<num2<<endl;
+    }
+}
+
+// 部分特化
+template<class N> void compare(int num1,N num2){
+    cout<<"partitial specialization"<<endl;
+    if(num1>num2)
+    {
+        cout<<"num1:"<<num1<<"> num2:"<<num2<<endl;
+    }
+    else
+    {
+        cout<<"num1:"<<num1<<"<= num2:"<<num2<<endl;
+    }
+}
+
+// 将模板参数特化为指针
+template<class T, class N> void compare(T* num1,N* num2){
+    cout<<"new partitial specialization"<<endl;
+    if(num1>num2)
+    {
+        cout<<"num1:"<<num1<<"> num2:"<<num2<<endl;
+    }
+    else
+    {
+        cout<<"num1:"<<num1<<"<= num2:"<<num2<<endl;
+    }
+}
+// 将模板参数特化为另一个模板类
+template<class T, class N> void compare(std::vector<T>& vecLeft,std::vector<T>& vecRight){
+    cout<<"new partitial specialization"<<endl;
+    if(vecLeft.size()>vecRight.size())
+    {
+        cout<<"vecLeft.size()"<<vecLeft.size()<<"> vecRight.size():"<<vecRight.size()<<endl;
+    }
+    else
+    {
+        cout<<"vecLeft.size()"<<vecLeft.size()<<"<= vecRight.size():"<<vecRight.size()<<endl;
+    }
+}
+```
+
+## 类模板特化
+
+```cpp
+#include<vector>
+#include<iostream>
+// 类模板
+template<typename T,typename N> class TestClass{
+public:
+    static bool comp(T num1,N num2){
+        cout<<"standard class template"<<endl;
+        return (num1<num2)? true : false;
+    }
+}
+
+// 类模板部分特化
+template <typename N> class TestClass<int,N>{
+public:
+    static bool comp(int num1,N num2){
+        cout<<"partitial specialization"<<endl;
+        return (num1<num2)? true : false;
+    }
+}
+
+template<typename T,typename N> class TestClass<T*,N*>{
+public:
+    static bool comp(T* num1,N* num2){
+        cout<<"to point standard class template"<<endl;
+        return (*num1<*num2)? true : false;
+    }
+}
+
+template<typename T,typename N> class TestClass<vector<T>,vector<N>>{
+public:
+    static bool comp(vector<T>& vecLeft,vector<T>& vecRight){
+        cout<<"to vector partitial specialization"<<endl;
+        return (vecLeft.size()<vecRight.size())? true : false;
+    }
+}
+```

@@ -1,0 +1,301 @@
+---
+title: '设计模式'
+description: '常用的设计模式及其在 C++ 中的实现'
+order: 2
+---
+
+## 单例模式
+
+单例模式又分为饿汉和懒汉两种模式：
+
+饿汉：在单例类定义时就进行实例化
+
+```cpp
+class SingleInstance
+{
+public:
+	static SingleInstance *GetInstance()
+	{
+		return &ins; // 返回引用和返回值的区别
+	}
+	~SingleInstance();
+
+private:
+    static SingleInstance ins;
+	SingleInstance()
+	{
+		std::cout << "饿汉" << std::endl;
+	}
+	SingleInstance(const SingleInstance &other) {}
+	SingleInstance &operator=(const SingleInstance &other) { return *this; }
+};
+SingleInstance SingleInstance::ins;
+```
+
+懒汉（需要加锁保证线程安全）：第一次使用时才进行实例化
+
+```cpp
+class SingleInstance
+{
+public:
+	static SingleInstance *GetInstance()
+	{
+		if (ins == nullptr)	// 减少对同步锁的竞争
+		{
+			pthread_mutex_lock(&mutex);
+			if (ins == nullptr)	// 保证线程安全
+			{
+				ins = new SingleInstance();
+			}
+			pthread_mutex_unlock(&mutex);
+		}
+		return ins;
+	}
+	~SingleInstance(){};
+	static pthread_mutex_t mutex;
+
+private:
+	SingleInstance()
+	{
+		std::cout << "懒汉" << std::endl;
+	}
+	SingleInstance(const SingleInstance &other) {}
+	SingleInstance &operator=(const SingleInstance &other) { return *this; }
+	static SingleInstance *ins;
+};
+
+SingleInstance *SingleInstance::ins = nullptr;
+pthread_mutex_t SingleInstance::mutex;
+```
+
+## 工厂模式
+
+由一个工厂类根据传入的参数，动态决定应该创建哪一个产品类的实例。
+
+```cpp
+#include <iostream>
+#include <memory>
+
+// 产品类
+class Product
+{
+public:
+	Product() {};
+	virtual void show() = 0;
+};
+
+// A产品类
+class productA : public Product
+{
+public:
+	productA() {};
+	void show()
+	{
+		std::cout << "product A create!" << std::endl;
+	};
+};
+
+// B产品类
+class productB : public Product
+{
+public:
+	productB() {};
+	void show()
+	{
+		std::cout << "product B create!" << std::endl;
+	};
+};
+
+// 工厂类
+class simpleFactory
+{
+public:
+	Product *product(const std::string str)
+	{
+		if (str == "productA")
+		{
+			return new productA();
+		}
+		else if (str == "productB")
+		{
+			return new productB();
+		}
+		else
+			return nullptr;
+	}
+};
+
+int main()
+{
+	simpleFactory obj;
+	std::unique_ptr<Product> pro(obj.product("productA")); // 向上转型
+	pro->show();
+	pro.reset(obj.product("productB"));
+	pro->show();
+	return 0;
+}
+```
+
+## 观察者模式
+
+定义一对多的关系，让多个观察对象同时监听一个被观察对象，当被观察者状态发生变化时，会通知所有观察对象。
+
+```cpp
+#include <iostream>
+#include <string>
+#include <list>
+#include <memory>
+
+using namespace std;
+
+class Subject;
+
+// 观察者基类
+class Observer
+{
+protected:
+	string name;
+	Subject *sub;
+public:
+	Observer(string name, Subject *sub)
+	{
+		this->name = name;
+		this->sub = sub;
+	}
+	virtual void update() = 0;
+};
+
+class StockObserver : public Observer {
+public:
+	StockObserver(string name, Subject *sub) : Observer(name, sub) {};
+	void update();
+};
+
+class NBAObserver : public Observer {
+public:
+	NBAObserver(string name, Subject *sub) : Observer(name, sub) {};
+	void update();
+};
+
+// 观察者基类
+class Subject {
+protected:
+	std::list<Observer*> observers;
+public:
+	string action;
+	virtual void attach(Observer*) = 0;
+	virtual void detach(Observer*) = 0;
+	virtual void notify() = 0;
+};
+
+class Secretary : public Subject {
+	void attach(Observer *observer) {
+		observers.push_back(observer);
+	}
+	void detach(Observer* observer) {
+		list<Observer*>::iterator iter = observers.begin();
+		while (iter != observers.end())
+		{
+			if ((*iter) == observer)
+			{
+				observers.erase(iter);
+				return;
+			}
+			++iter;
+		}
+	}
+	void notify() {
+		list<Observer*>::iterator iter = observers.begin();
+		while (iter != observers.end())
+		{
+			(*iter)->update();
+			++iter;
+		}
+	}
+};
+
+void StockObserver::update()
+{
+	cout << name << "收到信息：" << sub->action << endl;
+	if (sub->action == "来了！")
+	{
+		cout << "Stock" << endl;
+	}
+}
+
+void NBAObserver::update()
+{
+	cout << name << "收到信息：" << sub->action << endl;
+	if (sub->action == "来了！")
+	{
+		cout << "NBA" << endl;
+	}
+}
+```
+
+## 装饰器模式
+
+允许向一个现有对象添加新的功能，同时又不改变其结构
+
+```cpp
+#include <iostream>
+#include <list>
+#include <memory>
+using namespace std;
+
+// 抽象构建类
+class Transfrom {
+public:
+	virtual void move() = 0;
+};
+
+// 具体构建类
+class Car : public Transfrom {
+public:
+	Car() {
+		cout << "车！" << endl;
+	}
+	void move() {
+		cout << "在陆地上" << endl;
+	}
+};
+
+// 抽象装饰类
+class Changer : public Transfrom
+{
+public:
+	Changer(shared_ptr<Transfrom> transfrom) {
+		this->transfrom = transfrom;
+	}
+	void move() {
+		transfrom->move();
+	}
+
+private:
+	shared_ptr<Transfrom> transfrom;
+};
+
+// 具体装饰类
+class Robot : public Changer {
+public:
+	Robot(shared_ptr<Transfrom> transfrom) :Changer(transfrom) {	// 显式调用父类构造
+		cout << "机器人！" << endl;
+	}
+	void say() {
+		cout << "说话！" << endl;
+	}
+};
+
+int main()
+{
+	shared_ptr<Transfrom> camaro = make_shared<Car>();
+	camaro->move();
+	cout << "-------------" << endl;
+	shared_ptr<Robot> bumblebee = make_shared<Robot>(camaro);
+	bumblebee->move();
+	bumblebee->say();
+	cout << camaro.use_count() << endl;	//输出2
+	cout << bumblebee.use_count() << endl;	//输出1
+	return 0;
+}
+```

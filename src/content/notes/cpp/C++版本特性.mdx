@@ -1,0 +1,172 @@
+---
+title: 'C++版本特性'
+description: 'C++17、C++20、C++23 的新特性和库扩展'
+order: 1
+---
+
+## C++17
+
+> **从 C++11 到 C++17 的演进**：C++11 奠基现代 C++，C++14 优化表达，C++17 增强实用性和库（如文件系统和并行）。这些升级减少了 boilerplate 代码，提高了性能（移动语义、并行）和安全性（智能指针、属性）。
+
+### 新特性
+
+- 结构化绑定（structured bindings）
+
+```c++
+auto [it, inserted] = myset.insert(42);
+```
+
+- `if`/`switch` 初始化语句
+
+```cpp
+if (auto it = mp.find(k); it != mp.end()) { ... }
+```
+
+- `if constexpr` 条件编译期分支（SFINAE 替代品）
+
+```cpp
+template<class T> void f(const T& x) {   if constexpr (std::is_integral_v<T>) { /* 整型路径 */ }   else { /* 其他路径 */ } }
+```
+
+- 折叠表达式（fold expressions）
+
+```cpp
+template<class... Ts> auto sum(Ts... xs) { return (xs + ...); }   // 一元右折叠
+```
+
+- 内联变量（inline variables）
+
+```cpp
+inline constexpr double pi = 3.14159;
+```
+
+- 类模板实参推导（CTAD）与推导指南（deduction guides）
+
+```cpp
+std::pair p{1, 2.0}; // 推导为 std::pair<int,double> (C++17和20都正确)
+
+#include <iostream>
+#include <typeinfo>  // for typeid
+
+template <typename T>
+struct MyContainer {
+    T value;
+    // MyContainer(T val) : value(val) {  (C++17必须定义和20可以省略)
+    //     std::cout << "MyContainer<" << typeid(T).name() << ">(" << val << ")\n";    // }};  (C++17必须定义和20可以省略)
+
+int main() {
+    MyContainer c1{42};      // 推导为 MyContainer<int>    std::cout << typeid(c1.value).name() << std::endl;
+    return 0;
+}
+```
+
+- 嵌套命名空间缩写：`namespace a::b::c { }`
+- `[[nodiscard]]` / `[[maybe_unused]]` / `[[fallthrough]]` 属性
+- `auto` 非类型模板参数：`template<auto N> struct A { ... };`
+- 保证的拷贝省略（prvalue 物化规则调整）
+- 动态异常说明移除（`throw(T)` 被移出；`throw()` 等同 `noexcept(true)`）
+
+### 标准库拓展
+
+- **值语义工具**：`<any>`、`<optional>`、`<variant>`
+- **视图类**：`<string_view>`
+- **文件系统**：`<filesystem>`（`std::filesystem::path`、遍历、拷贝、监测等）
+- **并行算法与执行策略**：`<execution>`（`seq`/`par`/`par_unseq`，大多数 `<algorithm>` 支持）
+- **低开销数值转换**：`<charconv>`（`to_chars`/`from_chars`）
+- **多读单写互斥**：`<shared_mutex>`（`std::shared_mutex`、`std::shared_lock`）
+- **多互斥体无死锁锁守卫**：`std::scoped_lock`
+- **PMR 内存资源**：`<memory_resource>` 与 `std::pmr::vector/string/...`
+- 其它有用工具：`std::invoke`、`std::apply`、`std::clamp`、`std::byte`、`std::as_const`、`std::not_fn`、Boyer-Moore 搜索器等
+- 关联与无序容器增强：`try_emplace`、`insert_or_assign`、`extract/merge` 节点句柄
+
+### Questions
+
+#### variant和any
+
+| **方案**     | **std::variant (C++17)**                                   | **std::any (C++17)**                                             |
+| ------------ | ---------------------------------------------------------- | ---------------------------------------------------------------- |
+| **已知类型** | 必须在定义时**列出所有**可能的类型。                       | 可以存储**任何**类型。                                           |
+| **类型安全** | 编译时检查 (使用 `std::get<T>`)，保证类型在已知列表中。    | 运行时检查 (使用 `std::any_cast<T>`)，如果类型不匹配则抛出异常。 |
+| **性能**     | 通常**更快**，因为它将类型限制在已知列表中（类似 Union）。 | 略慢，涉及运行时类型信息（RTTI）和内存分配。                     |
+| **内存大小** | **固定**为最大类型成员的大小。                             | 动态分配内存。                                                   |
+| **推荐场景** | 配置、JSON 解析等，类型集合**有限且已知**。                | 通用函数参数、插件系统等，类型集合**开放且未知**。               |
+
+## C++20
+
+### 格式化文本
+
+1. `printf`:继承自C语言,速度快,缺点为弱类型安全,当参数类型与其对应的格式说明符不匹配时,会产生严重问题.
+2. `isotream`:确保了类型安全,但该库庞大复杂,导致代码冗长且速度慢.
+3. `format`:新格式化库
+
+### 模块
+
+C++的基本编译单元为*翻译单元*,C++20之前为一个.h和.cpp文件组成,而C++20的翻译单元又称为模块单元.不同编译器的模块单元文件名不同，例如MSVC的模块单元为.ixx的格式，而gcc的模块单元可以是.cpp。每个模块文件的第一行，以及其他语句之前必须有一个模块声明。如果需要使用头文件，则必须在第一行声明`module`。
+
+```cpp
+//只有module
+export module 模块名;
+
+//既有module，也有include
+module;
+#include<>
+export module 模块名;
+```
+
+CMake:3.28之前无法直接使用ninja+msvc，而必须使用vs2022作为生成器
+
+#### 头文件形式（Header Files）
+
+1. **预处理（Preprocessing）**:
+   - 头文件内容在预处理阶段通过`#include`指令被文本替换到源文件中。
+   - 宏定义被展开，条件编译指令被处理。
+2. **编译（Compilation）**:
+   - 预处理后的源代码被编译为目标代码。
+   - 每个源文件独立编译，如果多个源文件包含同一个头文件，头文件会被多次包含和编译。
+3. **汇编（Assembly）**:
+   - 编译生成的汇编代码转换成机器代码，形成目标文件。
+4. **链接（Linking）**:
+   - 目标文件被链接器处理，解决跨文件的符号引用。
+   - 重复包含的头文件可能导致符号重定义等链接错误。
+
+#### 模块形式（Modules）
+
+1. **预处理（Preprocessing）**:
+   - 模块不经过传统的文本替换预处理。
+   - 导入模块使用`import`关键字，不像头文件那样有宏和包含指令。
+2. **编译（Compilation）**:
+   - 模块接口（通常是`.ixx`或`.cppm`文件）被编译成二进制模块接口文件（BMI, Binary Module Interface）。此外，模块的实现部分也会被编译成目标文件。
+   - 被导入模块的代码只需编译一次，不会像头文件那样在每个源文件中重复编译。
+3. **汇编（Assembly）**:
+   - 与传统头文件流程相同，编译生成的代码需要被转换为机器代码。
+4. **链接（Linking）**:
+   - 使用模块时，编译器直接从BMI读取必要信息，而不需要链接器解析。
+   - 由于没有重复包含，模块避免了头文件可能造成的符号重定义问题。
+
+### 协程
+
+### ranges库
+
+范围(Ranges)的目标是提供一种更简洁、更易读、更安全且更高效的方式来操作数据序列，代替传统的迭代器和手动循环操作。
+
+- **Ranges（范围）**：是带有起始迭代器和终止迭代器的序列（可以是容器、数组或生成的序列）。
+- **Views（视图）**：是对范围的惰性（lazy）变换，不复制原始数据，仅在访问时计算。
+- **Range Adaptors（适配器）**：如 `std::views::filter`, `std::views::transform` 等，可以用管道符（`|`）链式组合。
+
+### 标准库拓展
+
+- **Ranges 库**：`<ranges>`（`views::filter/transform/take/drop/join/split/...`，`ranges::begin/end` 概念化迭代）
+- **`std::span`**：`<span>` 无拷贝视图
+- **格式化**：`<format>`（Python 风格：`std::format("x={} y={}", x, y)`）
+- **并发与同步**：
+  - `std::jthread` 与 **停止令牌** `<stop_token>`
+  - 低开销等待：`atomic::wait/notify_one/notify_all`
+  - 同步原语：`<latch>`、`<barrier>`、`<semaphore>`
+  - `std::atomic_ref`
+- **位与数值**：`<bit>`（`bit_cast`、`endian`、`countl_zero`/`bit_width` 等），`<numbers>`（数学常数）
+- **诊断与实用**：`<source_location>`、`std::type_identity`、`std::remove_cvref`、`std::bind_front`
+- **IO**：`<syncstream>`（`std::osyncstream` 消除多线程交错输出）
+- **时间库大扩展**：`<chrono>` 加入公历/时区（`year_month_day`、`zoned_time`、`time_zone`、`tzdb`）
+- **更多 `constexpr` 算法与容器**：多数 `<algorithm>` 变为 `constexpr`，`std::vector/std::string` 等可在常量表达式内使用（受实现限制时需注意编译器版本）。
+
+## C++23

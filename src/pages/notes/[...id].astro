@@ -27,7 +27,7 @@ const { post } = Astro.props
 const { Content, headings } = await render(post)
 const { description, title } = post.data
 
-const editPath = `https://github.com/cworld1/astro-theme-pure/edit/main/${post.filePath}`
+const editPath = `https://github.com/zephyraluco/zephyraluco.github.io/tree/main/${post.filePath}`
 ---
 
 <PageLayout meta={{ description, title }} back='/notes'>
@@ -69,9 +69,9 @@ const editPath = `https://github.com/cworld1/astro-theme-pure/edit/main/${post.f
       Edit on GitHub
     </Button>
     {/* Show notes contents */}
-    <div class='rounded-xl border px-4 py-3 mt-3 sm:py-4 md:mt-6'>
+    <!-- <div class='rounded-xl border px-4 py-3 mt-3 sm:py-4 md:mt-6'>
       <NotesContents />
-    </div>
+    </div> -->
   </div>
 </PageLayout>
 <MediumZoom />
