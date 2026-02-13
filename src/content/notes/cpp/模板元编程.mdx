@@ -3,9 +3,37 @@ title: '模板元编程'
 description: 'C++模板元编程相关问题'
 order: 3
 ---
-## DST推导规则
-1. 当模板参数列表中没有非类型模板参数时，编译器会根据函数参数的类型来推导模板参数。
 
+## 模板参数推导
+
+**1. 基本推导规则**
+
+当模板参数列表中没有非类型模板参数时，编译器会根据函数参数的类型来推导模板参数。
+
+**2. 引用折叠规则**
+
+> 只要有左值引用，就折叠为左值引用
+
+```cpp
+#include <iostream>
+#include <type_traits>
+
+template<typename T>
+void wrapper(T&& arg) {
+    using Ref = T&&;
+}
+
+int main() {
+    int x = 10;
+    wapper(x);  // T 推导为 int&，Ref 为 int&
+    wrapper(20); // T 推导为 int，Ref 为 int&&
+    wrapper(std::move(x)); // T 推导为 int，Ref 为 int&&
+    wrapper(std::forward<int>(x)); // T 推导为 int，Ref 为 int&&
+    wrapper(std::forward<int&>(x)); // T 推导为 int&，Ref 为 int&
+}
+```
+
+---
 
 ## 函数模板特化
 
@@ -103,4 +131,288 @@ public:
         return (vecLeft.size()<vecRight.size())? true : false;
     }
 }
+```
+
+---
+
+## 显式实例化
+
+```cpp
+// 显式实例化声明（extern）
+extern template class std::vector<int>;
+
+// 显式实例化定义
+template class std::vector<double>;
+
+// 避免在多个编译单元重复实例化，减少编译时间
+```
+
+---
+
+## SFINAE（替换失败不是错误）
+
+SFINAE 允许在模板实例化失败时不产生编译错误，而是尝试其他重载。
+
+```cpp
+// 使用 std::enable_if 实现 SFINAE
+template<typename T>
+typename std::enable_if<std::is_integral<T>::value, T>::type
+process(T value) {
+    return value * 2;
+}
+
+template<typename T>
+typename std::enable_if<std::is_floating_point<T>::value, T>::type
+process(T value) {
+    return value * 1.5;
+}
+```
+
+---
+
+## 类型萃取（Type Traits）
+
+### 为什么要设计traits？
+
+为了解决泛型算法中以"迭代器所指对象的型别"为返回值的问题，因为 C++只支持sizeof()来获得内存大小，但不支持typeof()获得类型，因此利用模板的参数推导机制推导出普通类型。然而推导机制不能适用于所有类，比如指针类型、引用类型等，所以设计了traits。
+
+```cpp
+// 自定义类型萃取
+template<typename T>
+struct is_pointer {
+    static constexpr bool value = false;
+};
+
+template<typename T>
+struct is_pointer<T*> {
+    static constexpr bool value = true;
+};
+
+// 使用
+static_assert(is_pointer<int*>::value, "Should be pointer");
+```
+
+---
+
+## 可变参数模板
+
+```cpp
+// 递归展开
+template<typename T>
+void print(T value) {
+    std::cout << value << std::endl;
+}
+
+template<typename T, typename... Args>
+void print(T first, Args... args) {
+    std::cout << first << ", ";
+    print(args...);
+}
+
+// 使用
+print(1, 2.5, "hello", 'c');
+```
+
+---
+
+## 折叠表达式（C++17）
+
+```cpp
+// 一元右折叠
+template<typename... Args>
+auto sum(Args... args) {
+    return (args + ...);  // (a + (b + (c + d)))
+}
+
+// 一元左折叠
+template<typename... Args>
+auto sum_left(Args... args) {
+    return (... + args);  // (((a + b) + c) + d)
+}
+
+// 二元折叠
+template<typename... Args>
+void print_all(Args... args) {
+    (std::cout << ... << args) << '\n';
+}
+```
+
+---
+
+## constexpr if（C++17）
+
+编译期条件分支，避免运行时开销。
+
+```cpp
+template<typename T>
+auto get_value(T t) {
+    if constexpr (std::is_pointer_v<T>) {
+        return *t;  // 指针类型：解引用
+    } else {
+        return t;   // 非指针类型：直接返回
+    }
+}
+```
+
+---
+
+## 模板模板参数
+
+```cpp
+template<typename T, template<typename> class Container>
+class Stack {
+    Container<T> data;
+public:
+    void push(const T& item) { data.push_back(item); }
+    T pop() {
+        T item = data.back();
+        data.pop_back();
+        return item;
+    }
+};
+
+// 使用
+Stack<int, std::vector> intStack;
+Stack<double, std::deque> doubleStack;
+```
+
+---
+
+## Concepts（C++20）
+
+```cpp
+// 定义概念
+template<typename T>
+concept Numeric = std::is_arithmetic_v<T>;
+
+// 使用概念约束模板
+template<Numeric T>
+T add(T a, T b) {
+    return a + b;
+}
+
+// 更复杂的概念
+template<typename T>
+concept Comparable = requires(T a, T b) {
+    { a < b } -> std::convertible_to<bool>;
+    { a > b } -> std::convertible_to<bool>;
+};
+```
+
+---
+
+## 非类型模板参数
+
+```cpp
+// 整数作为模板参数
+template<int N>
+struct Factorial {
+    static constexpr int value = N * Factorial<N - 1>::value;
+};
+
+template<>
+struct Factorial<0> {
+    static constexpr int value = 1;
+};
+
+// 使用
+constexpr int result = Factorial<5>::value;  // 120
+```
+
+---
+
+## 模板别名（using）
+
+```cpp
+// 简化复杂类型
+template<typename T>
+using Vec = std::vector<T>;
+
+template<typename K, typename V>
+using Map = std::unordered_map<K, V>;
+
+// 使用
+Vec<int> numbers;
+Map<std::string, int> ages;
+```
+
+---
+
+## CRTP（奇异递归模板模式）
+
+```cpp
+// 基类接受派生类作为模板参数
+template<typename Derived>
+class Base {
+public:
+    void interface() {
+        static_cast<Derived*>(this)->implementation();
+    }
+};
+
+class Derived : public Base<Derived> {
+public:
+    void implementation() {
+        std::cout << "Derived implementation\n";
+    }
+};
+```
+
+---
+
+## 标签分发（Tag Dispatch）
+
+```cpp
+// 定义标签类型
+struct integral_tag {};
+struct floating_tag {};
+
+// 根据类型选择标签
+template<typename T>
+struct type_tag {
+    using type = std::conditional_t<
+        std::is_integral_v<T>,
+        integral_tag,
+        floating_tag
+    >;
+};
+
+// 重载函数
+template<typename T>
+void process_impl(T value, integral_tag) {
+    std::cout << "Processing integer\n";
+}
+
+template<typename T>
+void process_impl(T value, floating_tag) {
+    std::cout << "Processing float\n";
+}
+
+// 统一接口
+template<typename T>
+void process(T value) {
+    process_impl(value, typename type_tag<T>::type{});
+}
+```
+
+---
+
+## 依赖名称
+
+```cpp
+template<typename T>
+class MyClass {
+public:
+    // 使用 typename 声明依赖类型
+    typename T::value_type getValue();
+
+    // 使用 template 关键字调用依赖模板
+    template<typename U>
+    void call() {
+        obj.template method<U>();
+    }
+
+private:
+    T obj;
+};
 ```

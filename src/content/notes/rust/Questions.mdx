@@ -1,0 +1,110 @@
+---
+title: 'Questions'
+description: 'Rust相关的常见问题和解答'
+order: 10
+---
+
+## Rust中Copy和Clone
+
+### Copy
+
+#### 定义
+
+Copy 的全名是 std::marker::Copy。请大家注意 std::marker 这个模块里面的所有的 trait 都是特殊的 trait。目前稳定的有四个，它们是 Copy、Send、Sized、Sync。它们的特殊之处在于它们是跟编译器密切绑定的，impl 这些 trait 对编译器的行为有重要影响。在编译器眼里，它们与其它的 trait 不一样。这几个 trait 内部都没有方法，它们的唯一任务是，给类型打一个“标记”，表明它符合某种约定，这些约定会影响编译器的静态检查以及代码生成。  
+ 一旦一个类型实现了 Copy trait，那么它在变量绑定、函数参数传递、函数返回值传递等场景下，它都是 copy 语义，而不再是默认的 move 语义。
+
+#### 实现条件
+
+并不是所有的类型都可以实现Copy trait。Rust规定，对于自定义类型，**只有所有的成员都实现了 Copy trait，这个类型才有资格实现 Copy trait**。  
+常见的数字类型、bool类型、共享借用指针&，都是具有 Copy 属性的类型。而 Box、Vec、可写借用指针&mut 等类型都是不具备 Copy 属性的类型。
+
+### Clone
+
+#### 定义
+
+Clone 的全名是 std::clone::Clone。它的完整声明是这样的：
+
+```rust
+pub trait Clone : Sized {
+    fn clone(&self) -> Self;
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone()
+    }
+}
+```
+
+它有两个关联方法，其中 clone_from 是有默认实现的，它依赖于 clone 方法的实现。clone 方法没有默认实现，需要我们手动实现。
+
+### Copy和Clone的区别
+
+1. Copy继承于Clone，因此所有`Copy`类型也一定是`Clone`类型。
+2. 从被复制的内容来讲，`Copy`仅只对【栈】内存做【按位复制】，**而不对任何【堆】内存负责**。而，`Clone`需要对复本的**整体有效性**负责，因此像String，Box等类型没有实现`Copy`特征。
+3. 从复制的行为上来讲，`Copy`的实现完全由`rustc`来定义,而`Clone`则完全由开发者自己定义。
+4. 从调用方式上来讲,`Copy`自动的隐式触发,而`Clone`必须手动调用。
+
+## String 与 &str
+
+官方解释:
+
+- String 是一个被拥有（owned）的在堆上分配的 UTF-8 的字节缓冲区。
+- &str 是一个指向分配在某处的 String 的一个固定容量的「视图」。如果切片是在从 String 解引而来的，则通常是指向在堆上，如果是字符串字面值，则指向静态内存。
+
+### &str转为String
+
+```rust
+let c =a.to_string(); //方法一
+let d =String::from(b) //方法二
+let d =a.to_owned();//方法三
+```
+
+### String转为&str
+
+```rust
+let c =a.as_str(); //方法一
+let d =&a[..] //方法二
+```
+
+### 什么是dyn?
+
+dyn关键字用于强调相关trait的方法是动态分配的。要以这种方式使用trait，它必须是“对象安全”的。**即实现dyn \_\_ trait的对象大小不确定,在运行时进行动态分发的。**  
+栈上的变量必须在编译时确定大小，而动态多态类型的大小在编译时是不确定的。因此，使用`dyn`关键字声明的类型只能通过引用或者智能指针（如`Box<dyn Trait>`、`Rc<dyn Trait>`、`Arc<dyn Trait>`等）来间接引用，从而在堆上分配内存。
+
+### 什么是Sync?
+
+> `Sync`是一个trait（特征），用于标记可以安全地在多个线程之间共享的类型。具体来说，实现了`Sync` trait的类型可以在多个线程中同时访问，而不会引发数据竞争。
+
+要将类型标记为`Sync`，只需为该类型实现`Sync` trait即可,且无需重写任何函数。这通常是由编译器自动完成的，对于绝大多数类型来说，它们都是`Sync`的。但是，如果你有自定义类型，并且需要在多个线程中共享它，你需要确保该类型实现了`Sync` trait。
+
+### 什么是Send？
+
+> `Send`特征用于表示一个类型可以安全地在不同线程之间传递所有权。具有`Send`特征的类型可以跨线程传递，而不会导致数据竞争或其他线程安全问题。
+
+要在类型上实现`Send`特征，需要满足以下两个条件：
+
+1. 类型的所有权可以在线程之间传递，这意味着它是`Sized`的。可以使用`#[derive(Send)]`来自动实现此条件。
+2. 类型的所有成员也实现了`Send`特征，或者被标记为`!Send`。如果类型有成员不满足`Send`特征的要求，可以使用`std::marker::PhantomData`或`std::cell::UnsafeCell`等手段来解决。
+
+## 所有权问题
+
+```rust
+// 编译成功
+fn main() {
+    let mut x = 1;
+    let y = &mut x;  // 第一次可变借用
+    let z = &mut x;  // 第二次可变借用
+    println!("{}, {}", x, y);
+}
+
+// 编译失败
+fn main() {
+    let mut x = 1;
+    let y = &mut x;
+    let z = &mut x;
+}
+```
+
+为什么成功？
+
+- Rust 的借用检查器有 **非活动借用(non-lexical lifetimes, NLL)** 机制。
+- 虽然 `y` 在语法上在 `z` 之前声明，但它从未使用过，所以它的作用域在创建 `z` 前就结束了。
+- 因此，第二个可变借用 `z` 是合法的。
