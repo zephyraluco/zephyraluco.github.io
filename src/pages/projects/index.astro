@@ -6,14 +6,11 @@ import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
 import Sponsors from '@/components/projects/Sponsors.astro'
 import Sponsorship from '@/components/projects/Sponsorship.astro'
-import alipay from '@/assets/alipay-qrcode.jpg'
 import KeyIcon from '@/assets/icons/key.svg'
-import wechat from '@/assets/wechat-qrcode.jpg'
 
 const headings = [
   { depth: 2, slug: 'programs', text: 'Programs' },
-  { depth: 2, slug: 'learnings', text: 'Learnings' },
-  { depth: 2, slug: 'others', text: 'Others' }
+  { depth: 2, slug: 'learnings', text: 'Learnings' }
 ]
 ---
 
@@ -49,22 +46,22 @@ const headings = [
   <ProjectSection
     projects={[
       {
-        name: '🎨 Astro Theme Pure',
-        description: 'A simple, fast and powerful blog & document theme built by Astro',
+        name: 'zenrc',
+        description: 'A shared memory based robot core',
         links: [
-          { type: 'github', href: 'https://github.com/cworld1/astro-theme-pure' },
-          { type: 'site', href: 'https://astro-pure.js.org/' },
-          { type: 'doc', href: 'https://astro-pure.js.org/docs/list' },
-          { type: 'release', href: 'https://www.npmjs.com/package/astro-pure' }
+          { type: 'github', href: 'https://github.com/zephyraluco/zenrc' },
+          { type: 'site', href: 'https://github.com/zephyraluco/zenrc' },
+          { type: 'doc', href: 'https://github.com/zephyraluco/zenrc' },
+          // { type: 'release', href: 'https://www.npmjs.com/package/astro-pure' }
         ]
       },
       {
-        name: '💄 PKU Art',
-        description: 'A script to beautify pku course website',
+        name: 'alacrterm',
+        description: '一个基于 Alacritty 和 GPUI 的终端模拟器',
         links: [
-          { type: 'github', href: 'https://github.com/zhuozhiyongde/pku-art' },
-          { type: 'site', href: 'https://github.com/zhuozhiyongde/pku-art' },
-          { type: 'doc', href: 'https://docs.arthals.ink/docs/pku-art' }
+          { type: 'github', href: 'https://github.com/zephyraluco/alacrterm' },
+          { type: 'site', href: 'https://github.com/zephyraluco/alacrterm' },
+          { type: 'doc', href: 'https://github.com/zephyraluco/alacrterm' }
         ]
       }
     ]}
@@ -73,21 +70,21 @@ const headings = [
     <ProjectSection
       projects={[
         {
-          name: '🧩 rehype-autolink-headings-simple',
-          description: 'A simple version of rehype-autolink-headings',
+          name: 'olei_driver',
+          description: '从OLEI官方ros驱动拆分出的SDK',
           links: [
-            { type: 'github', href: 'https://github.com/cworld1/rehype-autolink-headings-simple' },
-            {
-              type: 'release',
-              href: 'https://www.npmjs.com/package/rehype-autolink-headings-simple'
-            }
+            { type: 'github', href: 'https://github.com/zephyraluco/olei_driver' },
+            // {
+            //   type: 'release',
+            //   href: 'https://www.npmjs.com/package/rehype-autolink-headings-simple'
+            // }
           ]
         },
         {
-          name: 'Gaussian NB',
+          name: 'cyclonedds-iox2',
           description:
-            'Simulating the Parsimonious Bayesian Algorithm with Python and Finding the Probability Prediction of Breast Cancer ',
-          links: [{ type: 'github', href: 'https://github.com/cworld1/gaussian-nb' }]
+            '集成了 iceoryx2 插件的 CycloneDDS SDK',
+          links: [{ type: 'github', href: 'https://github.com/zephyraluco/cyclonedds-iox2' }]
         }
       ]}
     />
@@ -114,22 +111,6 @@ const headings = [
             href: 'https://github.com/zhuozhiyongde/Introduction-To-Computer-System-2023Fall-PKU'
           }
         ]
-      }
-    ]}
-  />
-
-  <h2 id='others'>Others</h2>
-  <ProjectSection
-    projects={[
-      {
-        name: 'CWorld',
-        description: "CWorld's Github",
-        links: [{ type: 'github', href: 'https://github.com/cworld1' }]
-      },
-      {
-        name: 'Arthals',
-        description: 'Arthals Github',
-        links: [{ type: 'github', href: 'https://github.com/zhuozhiyongde' }]
       }
     ]}
   />
