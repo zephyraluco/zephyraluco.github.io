@@ -269,12 +269,13 @@ Ctrl-x a                      # 切换 TUI 模式
 
 ```bash
 ulimit -c unlimited           # 允许生成 core dump
+sudo sysctl -w kernel.core_pattern=core.%p           # 设置core文件的输出路径
 ```
 
 ### 分析 Core Dump
 
 ```bash
-gdb program core              # 加载程序和 core 文件
+gdb program core.*              # 加载程序和 core 文件
 ```
 
 常用命令：
