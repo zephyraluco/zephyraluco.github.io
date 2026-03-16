@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets'
-
+import { Spoiler } from 'astro-pure/user'
 import { Quote } from 'astro-pure/advanced'
 import { PostPreview } from 'astro-pure/components/pages'
 import { getBlogCollection, sortMDByDate } from 'astro-pure/server'
@@ -74,13 +74,14 @@ if (!images[imagePath])
     </section>
 
     <div id='content' class='animate flex flex-col gap-y-10 md:w-4/5 lg:w-5/6'>
-      <Section title='About'>
-        <p class='text-muted-foreground'>C++ / Rust 软件工程师</p>
+      <p class='text-muted-foreground' style="text-align: center;">L'essentiel est invisible pour les yeux</p>
+      <!-- <Section title='About'>
+        <p class='text-muted-foreground'>C++ / Rust Developer</p>
         <p class='text-muted-foreground'>
-          目前从事机器人相关的软件开发工作，主要使用 C++ 和 Rust 语言。兴趣包括嵌入式系统、分布式系统以及高性能计算。
+          你好！我是Zeal，一名C++/Rust开发者
         </p>
         <Button title='More about me' class='w-fit self-end' href='/about' variant='ahead' />
-      </Section>
+      </Section> -->
       {
         allPostsByDate.length > 0 && (
           <Section title='Posts'>
