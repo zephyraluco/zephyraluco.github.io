@@ -1,7 +1,7 @@
 ---
 title: 'GDB使用指南'
 description: 'GDB调试工具常用方法'
-order: 2
+order: 1
 ---
 
 ## GDB 简介
