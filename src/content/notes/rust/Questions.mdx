@@ -4,25 +4,65 @@ description: 'Rust相关的常见问题和解答'
 order: 10
 ---
 
+## Marker Traits
+
+在 Rust 中，`std::marker` 模块提供了一组极其特殊的 **Marker Traits（标记 trait）**： 不包含任何方法、关联类型或常量，它们的唯一作用是**作为标签，在编译期向编译器传达类型的核心行为属性**
+
+### `Send`：允许跨线程转移所有权
+
+- **含义**：如果一个类型实现了 `Send`，意味着将该类型的值的所有权从线程 A 转移（Move）到线程 B 是安全的
+- **自动实现（Auto Trait）**：绝大多数类型都是自动实现 `Send` 的，只要它的所有成员都实现了 `Send`
+- **常见的非 `Send` 类型**：
+  - **`Rc<T>`**：因为它的引用计数是非原子操作（非线程安全）。如果多个线程同时增加 `Rc` 的计数，会导致数据竞争（Data Race）
+  - **裸指针 `*const T` / `*mut T`**：由于裸指针绕过了 Rust 的安全检查，编译器无法保证其跨线程的安全性，默认非 `Send`
+
+### `Sync`：允许跨线程共享引用
+
+- **含义**：如果一个类型实现了 `Sync`，意味着在多个线程中同时持有该类型的不可变引用（`&T`）是安全的
+- **与 `Send` 的关系**：根据定义，**如果 `&T` 是 `Send`，那么 `T` 就是 `Sync`**
+- **内部可变性（Internal Mutability）的影响**：
+  - `RefCell<T>`、`Cell<T>` **不是** `Sync`。因为它们的内部可变性操作不是原子性的
+  - `Mutex<T>`、`RwLock<T>` **是** `Sync`（只要 `T` 是 `Send`）。它们通过底层锁机制保证了多线程并发读写的安全性
+
+### `Copy`：改变赋值语义为“按位复制”
+
+- **含义**：如果一个类型实现了 `Copy`，那么在进行赋值操作（如 `let y = x;`）或函数传参时，会触发**隐式的按位复制（Bitwise Copy）**，而不是所有权的转移（Move）
+- **前提条件**：该类型必须已经实现了 `Clone`
+- **限制**：任何管理着外部资源（如堆内存、文件句柄）的类型都不能实现 `Copy`（例如 `String`、`Vec<T>`、`Box<T>`），因为按位复制会导致资源被多次双重释放（Double Free）
+
+### `Sized`：编译期已知大小的类型
+
+- **含义**：表示该类型在编译期间具有固定、已知的分配大小
+- **默认隐含**：在 Rust 中，所有的泛型参数默认都隐式带有 `T: Sized` 的约束
+- **动态大小类型（DST, Dynamic Sized Types）**：例如特征对象 `dyn MyTrait` 或切片 `[u_8]`。它们的大小在编译期无法确定，必须通过指针（如 `&[u_8]` 或 `Box<dyn MyTrait>`）间接使用
+- **放宽约束 `?Sized`**：如果你希望泛型可以接受动态大小类型，必须显式写为 `T: ?Sized`（意为“可能是或可能不是 Sized”）
+
+### 什么是 Auto Traits（自动标记）？
+
+在 `std::marker` 中，`Send`、`Sync`、`Unpin` 等属于特殊的 **Auto Traits**。
+
+- **自动推导**：你不需要显式地为你的结构体写 `impl Send for MyStruct {}`。编译器会自动检查：如果 `MyStruct` 里的所有字段都是 `Send` 的，那么 `MyStruct` 自动就是 `Send` 的。
+- **主动剥夺（Negative Impl）**：如果你想显式地让一个原本默认是 `Send` 的类型变为非 `Send`，可以使用特殊的语法（需要 unstable 特性，或通过内部组合非 Send 类型实现）：
+
+```Rust
+    // 逻辑上剥夺 Send 特征
+    impl !Send for MyType {}
+```
+
 ## Rust中Copy和Clone
 
 ### Copy
 
-#### 定义
-
-Copy 的全名是 std::marker::Copy。请大家注意 std::marker 这个模块里面的所有的 trait 都是特殊的 trait。目前稳定的有四个，它们是 Copy、Send、Sized、Sync。它们的特殊之处在于它们是跟编译器密切绑定的，impl 这些 trait 对编译器的行为有重要影响。在编译器眼里，它们与其它的 trait 不一样。这几个 trait 内部都没有方法，它们的唯一任务是，给类型打一个“标记”，表明它符合某种约定，这些约定会影响编译器的静态检查以及代码生成。  
- 一旦一个类型实现了 Copy trait，那么它在变量绑定、函数参数传递、函数返回值传递等场景下，它都是 copy 语义，而不再是默认的 move 语义。
-
 #### 实现条件
 
-并不是所有的类型都可以实现Copy trait。Rust规定，对于自定义类型，**只有所有的成员都实现了 Copy trait，这个类型才有资格实现 Copy trait**。  
-常见的数字类型、bool类型、共享借用指针&，都是具有 Copy 属性的类型。而 Box、Vec、可写借用指针&mut 等类型都是不具备 Copy 属性的类型。
+Rust规定，对于自定义类型，只有所有的成员都实现了 Copy trait，这个类型才有资格实现 Copy trait。  
+常见的数字类型、bool类型、共享借用指针&，都是具有 `Copy` 属性的类型。而 `Box`、`Vec`、可写借用指针`&mut` 等类型都是不具备 `Copy` 属性的类型。
 
 ### Clone
 
 #### 定义
 
-Clone 的全名是 std::clone::Clone。它的完整声明是这样的：
+Clone 的全名是 `std::clone::Clone`，它的完整声明是这样的：
 
 ```rust
 pub trait Clone : Sized {
@@ -33,7 +73,7 @@ pub trait Clone : Sized {
 }
 ```
 
-它有两个关联方法，其中 clone_from 是有默认实现的，它依赖于 clone 方法的实现。clone 方法没有默认实现，需要我们手动实现。
+它有两个关联方法，其中 `clone_from` 是有默认实现的，它依赖于 `clone` 方法的实现。`clone` 方法没有默认实现，需要我们手动实现。
 
 ### Copy和Clone的区别
 

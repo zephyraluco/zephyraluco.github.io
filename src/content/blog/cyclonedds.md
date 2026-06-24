@@ -265,7 +265,7 @@ tags:
 由于 CycloneDDS 会在后台开启诸多工作线程，此处可分别为它们指派系统级调度策略（需 OS 权限）： 涵盖的线程类别有：`<Receive>`, `<GC>` (垃圾回收), `<Discovery>`, `<Security>`, `<Sockets>` 等。 每个子类都可以单独配置以下参数：
 
 - **`<Scheduling>`**：线程调度策略。可选 `default`, `fifo` (先进先出实时调度), `rr` (时间片轮转)
-- **`<Priority>`**：线程优先级（整数）。如果是 Linux `fifo` 调度，对应 RT 优先级（1~99）；普通系统对应 Nice 值（-20~19）
+- **`<Priority>`**：线程优先级（整数）。如果是 Linux `fifo` 调度，对应 RT 优先级（1 ~ 99）；普通系统对应 Nice 值（-20 ~ 19）
 - **`<StackSize>`**：强制设定该线程栈空间的字节大小
 
 ### 9. `<Compatibility>` - 互操作与兼容性策略
