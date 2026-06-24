@@ -12,7 +12,7 @@ import SkillLayout from '@/components/home/SkillLayout.astro'
 import config from '@/site-config'
 
 const languages = ['C++', 'C#', 'Rust', 'Python', 'Shell']
-const frame = ['Qt', 'ROS', 'DDS', 'Tokio', 'Axum']
+const frame = ['Qt', 'ROS', 'DDS', 'Tokio', 'Axum', 'GPUI']
 const other = ['Docker', 'Linux','SQLite', 'Systemd', 'Socket']
 
 const MAX_POSTS = 5
@@ -188,7 +188,7 @@ if (!images[imagePath])
       <Section title='Skills'>
         <SkillLayout title='Programming' skills={languages} />
         <SkillLayout title='Frame' skills={frame} />
-        <SkillLayout title='Other' skills={other} />
+        <SkillLayout title='Others' skills={other} />
       </Section>
     </div>
     <Quote class='mt-12' />

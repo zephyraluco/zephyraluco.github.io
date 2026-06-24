@@ -2,7 +2,7 @@
 title: 'GPUI - 混合式GUI框架'
 description: 'GPUI 是 Zed 的 GPU 加速 UI 框架，采用混合立即模式和保留模式的设计'
 publishDate: '2026-06-22T00:00:00Z'
-draft: true
+updatedDate: '2026-06-25T00:00:00Z'
 tags:
   - GUI
   - wgpu
