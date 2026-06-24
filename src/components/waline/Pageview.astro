@@ -10,6 +10,8 @@ import config from '@/site-config'
   define:vars={{ npmCDN: config.npmCDN, walineServer: config.integ.waline.server }}
 >
   async function loadPageview() {
+    if (import.meta.env.DEV) return
+
     try {
       const pageview = await import(`${npmCDN}/@waline/client@v3/dist/pageview.js`)
       const el = document.querySelector('.waline-pageview-count')
