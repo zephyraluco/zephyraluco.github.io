@@ -127,7 +127,7 @@ dyn关键字用于强调相关trait的方法是动态分配的。要以这种方
 ## 所有权问题
 
 ```rust
-// 编译成功
+// 编译失败
 fn main() {
     let mut x = 1;
     let y = &mut x;  // 第一次可变借用
@@ -135,7 +135,7 @@ fn main() {
     println!("{}, {}", x, y);
 }
 
-// 编译失败
+// 编译成功
 fn main() {
     let mut x = 1;
     let y = &mut x;
