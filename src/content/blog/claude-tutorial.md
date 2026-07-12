@@ -1,10 +1,11 @@
 ---
-title: 'Claude Code使用心得'
-description: '记录使用Claude Code的使用体验和技巧'
+title: 'Coding Agent 配置记录'
+description: '记录 Coding Agent 的使用配置'
 publishDate: '2026-05-12T00:00:00Z'
 ---
+## Cluade Code
 
-## 常用命令
+### 常用命令
 
 | 命令                | 功能                                    | 使用场景                           |
 | ------------------- | --------------------------------------- | ---------------------------------- |
@@ -18,13 +19,13 @@ publishDate: '2026-05-12T00:00:00Z'
 | `claude --continue` | 继续最近一次会话                        | 重新打开终端后接着工作             |
 | `claude --resume`   | 从历史列表中选择一次会话继续            | 恢复几天前的某个特定任务           |
 
-## skill仓库
+### skill仓库
 
 https://skillsmp.com/zh
 
-## 切换环境变量
+### 切换环境变量
 
-### powershell
+#### powershell
 
 ```powershell
 function deepseek {
@@ -59,7 +60,7 @@ function claude {
 }
 ```
 
-### bash/zsh
+#### bash/zsh
 
 ```bash
 deepseek() {
@@ -93,7 +94,7 @@ claude() {
 }
 ```
 
-## Agent Teams
+### Agent Teams
 
 默认情况下下使用的是`Subagent`,如果需要使用Teams模式，则需要修改配置：
 
@@ -110,3 +111,19 @@ claude() {
 ```bash
 export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 ```
+## VSCode Copilot
+
+### 设置自定义模型(以 opencode 为例)
+点击管理模型按钮：
+![copilot配置](/images/vscode-copilot.png)
+添加模型，选择Custom Endpoint：
+![copilot配置](/images/vscode-copilot-1.png)
+填入自定义组名(opencode)：
+![copilot配置](/images/vscode-copilot-2.png)
+填入API：
+![copilot配置](/images/vscode-copilot-3.png)
+填入对应的模型ID，名称，URL：
+![copilot配置](/images/vscode-copilot-4.png)
+
+### OpenCode 免费模型
+![opencode模型](/images/opencode-model.png)
