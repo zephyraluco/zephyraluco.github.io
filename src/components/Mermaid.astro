@@ -1,0 +1,111 @@
+---
+// Mermaid client renderer. Place <Mermaid /> once in layouts that render
+// markdown content (e.g. BlogPost, IndividualPage, CommonPage).
+// It scans the page for `<div class="mermaid">` blocks produced by the
+// rehype-mermaid plugin and renders them with the mermaid library.
+---
+
+<mermaid-renderer></mermaid-renderer>
+
+<script>
+  type MermaidApi = {
+    initialize: (config: Record<string, unknown>) => void
+    run: (opts: { nodes: Iterable<HTMLElement> }) => Promise<void>
+  }
+
+  class MermaidRenderer extends HTMLElement {
+    private mermaid: MermaidApi | null = null
+    private initialized = false
+
+    private currentTheme(): 'dark' | 'light' {
+      return document.documentElement.classList.contains('dark')
+        ? 'dark'
+        : 'light'
+    }
+
+    private async loadMermaid(): Promise<MermaidApi> {
+      if (this.mermaid) return this.mermaid
+      const mod = await import('mermaid')
+      this.mermaid = (mod.default ?? mod) as unknown as MermaidApi
+      return this.mermaid
+    }
+
+    private async renderAll() {
+      const nodes = Array.from(
+        document.querySelectorAll<HTMLElement>('div.mermaid')
+      )
+      if (nodes.length === 0) return
+
+      const mermaid = await this.loadMermaid()
+      const theme = this.currentTheme()
+
+      if (!this.initialized || this.lastTheme !== theme) {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: theme === 'dark' ? 'dark' : 'default',
+          securityLevel: 'loose',
+          fontFamily: 'inherit'
+        })
+        this.initialized = true
+        this.lastTheme = theme
+      }
+
+      // Reset any previously rendered content so mermaid can re-parse.
+      for (const node of nodes) {
+        if (node.dataset.rendered === 'true') {
+          node.removeAttribute('data-processed')
+          node.innerHTML = node.textContent ?? ''
+        }
+      }
+
+      try {
+        await mermaid.run({ nodes })
+        for (const node of nodes) node.dataset.rendered = 'true'
+      } catch (err) {
+        console.error('Mermaid render error:', err)
+      }
+    }
+
+    private lastTheme: 'dark' | 'light' | undefined
+
+    connectedCallback() {
+      // Initial render after DOM is ready.
+      const run = () => this.renderAll()
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run, { once: true })
+      } else {
+        run()
+      }
+
+      // Re-render when theme changes (the theme-pure integration toggles
+      // the `dark` class on <html>).
+      const observer = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          if (m.attributeName === 'class') {
+            const theme = this.currentTheme()
+            if (theme !== this.lastTheme) run()
+            break
+          }
+        }
+      })
+      observer.observe(document.documentElement, { attributes: true })
+    }
+  }
+
+  customElements.define('mermaid-renderer', MermaidRenderer)
+</script>
+
+<style is:global>
+  /* Mermaid diagrams should not inherit prose code styling. */
+  .mermaid {
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+  .mermaid svg {
+    max-width: 100%;
+    height: auto;
+  }
+</style>

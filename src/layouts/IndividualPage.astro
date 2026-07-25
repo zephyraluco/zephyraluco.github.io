@@ -6,6 +6,7 @@ import { Button, Icon } from 'astro-pure/user'
 import { cn } from 'astro-pure/utils'
 import config from 'virtual:config'
 import PageLayout from '@/layouts/BaseLayout.astro'
+import Mermaid from '@/components/Mermaid.astro'
 
 type Props = MarkdownLayoutProps<{
   title: string
@@ -74,3 +75,4 @@ const socialImage = heroImage?.src ?? config.socialCard
 
   <BackToTop header='content-header' content='content' />
 </PageLayout>
+<Mermaid />

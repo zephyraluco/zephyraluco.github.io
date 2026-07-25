@@ -7,6 +7,7 @@ import remarkMath from 'remark-math'
 
 // Local integrations
 import rehypeAutolinkHeadings from './src/plugins/rehype-auto-link-headings.ts'
+import rehypeMermaid from './src/plugins/rehype-mermaid.ts'
 // Shiki
 import {
   addCollapse,
@@ -58,9 +59,14 @@ export default defineConfig({
 
   // [Markdown]
   markdown: {
+    syntaxHighlight: {
+      type: 'shiki',
+      excludeLangs: ['math', 'mermaid']
+    },
     remarkPlugins: [remarkMath],
     rehypePlugins: [
       [rehypeKatex, {}],
+      rehypeMermaid,
       rehypeHeadingIds,
       [
         rehypeAutolinkHeadings,
