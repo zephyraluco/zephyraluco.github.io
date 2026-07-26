@@ -1,6 +1,7 @@
 ---
-// Mermaid client renderer. Place <Mermaid /> once in layouts that render
-// markdown content (e.g. BlogPost, IndividualPage, CommonPage).
+// Mermaid client renderer with zoom / pan support.
+// Place <Mermaid /> once in layouts that render markdown content
+// (e.g. BlogPost, IndividualPage, CommonPage).
 // It scans the page for `<div class="mermaid">` blocks produced by the
 // rehype-mermaid plugin and renders them with the mermaid library.
 ---
@@ -16,6 +17,7 @@
   class MermaidRenderer extends HTMLElement {
     private mermaid: MermaidApi | null = null
     private initialized = false
+    private lastTheme: 'dark' | 'light' | undefined
 
     private currentTheme(): 'dark' | 'light' {
       return document.documentElement.classList.contains('dark')
@@ -50,26 +52,179 @@
         this.lastTheme = theme
       }
 
-      // Reset any previously rendered content so mermaid can re-parse.
+      // Reset previously rendered content so mermaid can re-parse.
       for (const node of nodes) {
         if (node.dataset.rendered === 'true') {
           node.removeAttribute('data-processed')
-          node.innerHTML = node.textContent ?? ''
+          // Restore original mermaid source code saved on first render.
+          node.innerHTML = node.dataset.mermaidCode ?? node.textContent ?? ''
+        }
+        // Save mermaid source before mermaid.run() overwrites innerHTML.
+        if (!node.dataset.mermaidCode) {
+          node.dataset.mermaidCode = node.textContent ?? ''
         }
       }
 
       try {
         await mermaid.run({ nodes })
-        for (const node of nodes) node.dataset.rendered = 'true'
+        for (const node of nodes) {
+          node.dataset.rendered = 'true'
+          this.setupZoomPan(node)
+        }
       } catch (err) {
         console.error('Mermaid render error:', err)
       }
     }
 
-    private lastTheme: 'dark' | 'light' | undefined
+    // ------------------------------------------------------------------
+    // Zoom / Pan – per-diagram interactive viewport
+    // ------------------------------------------------------------------
+    private setupZoomPan(container: HTMLElement) {
+      // Idempotent – don't double-wrap.
+      if (container.querySelector('.mermaid-interactive')) return
+
+      const svg = container.querySelector('svg')
+      if (!svg) return
+
+      // --- build wrapper DOM ---
+      const interactive = document.createElement('div')
+      interactive.className = 'mermaid-interactive'
+
+      const viewport = document.createElement('div')
+      viewport.className = 'mermaid-viewport'
+      viewport.appendChild(svg)
+
+      const controls = document.createElement('div')
+      controls.className = 'mermaid-controls'
+      controls.innerHTML = `
+        <button class="mermaid-ctrl zoom-in" title="放大" aria-label="放大">+</button>
+        <button class="mermaid-ctrl zoom-out" title="缩小" aria-label="缩小">−</button>
+        <button class="mermaid-ctrl zoom-reset" title="重置" aria-label="重置">↺</button>
+      `
+      interactive.appendChild(viewport)
+      interactive.appendChild(controls)
+      container.appendChild(interactive)
+
+      // --- per-instance state ---
+      let scale = 1
+      let tx = 0
+      let ty = 0
+      let panning = false
+      let lastX = 0
+      let lastY = 0
+
+      // pinch-zoom state
+      let pinchStartDist = 0
+      let pinchStartScale = 1
+
+      const MIN = 0.25
+      const MAX = 5
+      const STEP = 0.15
+
+      const clamp = (v: number) => Math.min(MAX, Math.max(MIN, v))
+
+      const apply = () => {
+        svg.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`
+      }
+
+      // --- wheel zoom (always from image centre) ---
+      viewport.addEventListener('wheel', (e) => {
+        e.preventDefault()
+        scale = clamp(scale + (e.deltaY < 0 ? STEP : -STEP))
+        apply()
+      }, { passive: false })
+
+      // --- pointer / touch pan ---
+      const onDown = (cx: number, cy: number) => {
+        panning = true
+        lastX = cx
+        lastY = cy
+        viewport.style.cursor = 'grabbing'
+        svg.style.userSelect = 'none'
+      }
+
+      viewport.addEventListener('mousedown', (e) => {
+        if (e.button === 0) onDown(e.clientX, e.clientY)
+      })
+
+      viewport.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          onDown(e.touches[0].clientX, e.touches[0].clientY)
+        } else if (e.touches.length === 2) {
+          // begin pinch
+          panning = false
+          pinchStartDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          )
+          pinchStartScale = scale
+        }
+      }, { passive: true })
+
+      const onMove = (cx: number, cy: number) => {
+        if (!panning) return
+        tx += (cx - lastX) / scale
+        ty += (cy - lastY) / scale
+        lastX = cx
+        lastY = cy
+        apply()
+      }
+
+      window.addEventListener('mousemove', (e) => onMove(e.clientX, e.clientY))
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2) {
+          // pinch zoom – centre-based
+          const dist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          )
+          scale = clamp(pinchStartScale * (dist / pinchStartDist))
+          apply()
+        } else if (e.touches.length === 1) {
+          onMove(e.touches[0].clientX, e.touches[0].clientY)
+        }
+      }, { passive: true })
+
+      const onUp = () => {
+        panning = false
+        viewport.style.cursor = ''
+        svg.style.userSelect = ''
+      }
+
+      window.addEventListener('mouseup', onUp)
+      window.addEventListener('touchend', onUp)
+
+      // --- double-click reset ---
+      viewport.addEventListener('dblclick', () => {
+        scale = 1
+        tx = 0
+        ty = 0
+        apply()
+      })
+
+      // --- control buttons ---
+      interactive.querySelector('.zoom-in')!.addEventListener('click', () => {
+        scale = clamp(scale + STEP * 2)
+        apply()
+      })
+      interactive.querySelector('.zoom-out')!.addEventListener('click', () => {
+        scale = clamp(scale - STEP * 2)
+        apply()
+      })
+      interactive.querySelector('.zoom-reset')!.addEventListener('click', () => {
+        scale = 1
+        tx = 0
+        ty = 0
+        apply()
+      })
+
+      // --- prevent native image drag on the SVG ---
+      svg.addEventListener('dragstart', (e) => e.preventDefault())
+
+      apply()
+    }
 
     connectedCallback() {
-      // Initial render after DOM is ready.
       const run = () => this.renderAll()
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', run, { once: true })
@@ -77,8 +232,7 @@
         run()
       }
 
-      // Re-render when theme changes (the theme-pure integration toggles
-      // the `dark` class on <html>).
+      // Re-render when theme changes.
       const observer = new MutationObserver((mutations) => {
         for (const m of mutations) {
           if (m.attributeName === 'class') {
@@ -96,16 +250,87 @@
 </script>
 
 <style is:global>
-  /* Mermaid diagrams should not inherit prose code styling. */
+  /* Host container – simple centering, overflow handled by viewport. */
   .mermaid {
     display: flex;
     justify-content: center;
     margin: 1.5rem 0;
-    overflow-x: auto;
     text-align: center;
   }
-  .mermaid svg {
+
+  /* Interactive wrapper – full-width so SVG can use all available space. */
+  .mermaid-interactive {
+    position: relative;
+    display: block;
+    width: 100%;
+  }
+
+  /* Clipped viewport – the pan/zoom canvas. */
+  .mermaid-viewport {
+    overflow: hidden;
+    cursor: grab;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80px;
+  }
+
+  .mermaid-viewport svg {
     max-width: 100%;
     height: auto;
+    transform-origin: center center;
+    will-change: transform;
+    /* disable transitions so zoom/pan feels instant */
+    transition: none;
+  }
+
+  /* Floating zoom controls – shown on hover. */
+  .mermaid-controls {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+  }
+
+  .mermaid-interactive:hover .mermaid-controls,
+  .mermaid-interactive:focus-within .mermaid-controls {
+    opacity: 1;
+  }
+
+  .mermaid-ctrl {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+    color: #374151;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .mermaid-ctrl:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+  }
+
+  :global(.dark) .mermaid-ctrl {
+    background: #1f2937;
+    color: #d1d5db;
+    border-color: #4b5563;
+  }
+
+  :global(.dark) .mermaid-ctrl:hover {
+    background: #374151;
+    border-color: #6b7280;
   }
 </style>
