@@ -7,10 +7,18 @@ draft: true
 import { Aside } from 'astro-pure/user'
 
 <Aside type='note' title='信息'>
-  已有集成项目：[stm32-nano](https://github.com/zephyraluco/stm32-nano)
+  可参考集成项目：[stm32-nano](https://github.com/zephyraluco/stm32-nano)
 </Aside>
 
-## 环境搭建(GCC+OpenOCD+ST-Link)
+## 环境搭建(MacOS)
+
+使用 Homebrew 安装依赖:
+```bash
+brew install open-ocd
+brew install --cask gcc-arm-embedded
+```
+
+## 环境搭建(Windows)
 
 ### OpenOCD
 
@@ -35,3 +43,22 @@ https://www.st.com/en/development-tools/st-link-v2.html
 3. [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
 4. [CMake IntelliSense](https://marketplace.visualstudio.com/items?itemName=KylinIdeTeam.cmake-intellisence)
 5. [Clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd)
+
+## 程序启动流程
+
+```mermaid
+flowchart TD
+    A[上电复位] --> B[startup_stm32f103xb.s<br/>Reset_Handler]
+    B --> C[SystemInit<br/>配置时钟]
+    C --> D[复制.data段<br/>清零.bss段]
+    D --> E[__libc_init_array<br/>静态构造函数]
+    E --> F[bl entry<br/>跳转到entry]
+    F --> G[components.c<br/>rtthread_startup]
+    G --> H[rt_hw_board_init<br/>板级初始化]
+    H --> I[rt_system_timer_init<br/>rt_system_scheduler_init]
+    I --> J[rt_application_init<br/>创建main线程]
+    J --> K[rt_thread_idle_init<br/>创建idle线程]
+    K --> L[rt_system_scheduler_start<br/>启动调度器]
+    L --> M[main_thread_entry<br/>rt_components_init]
+    M --> N[调用用户 main]
+```
