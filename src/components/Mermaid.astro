@@ -97,6 +97,7 @@
       const controls = document.createElement('div')
       controls.className = 'mermaid-controls'
       controls.innerHTML = `
+        <button class="mermaid-ctrl zoom-toggle" title="缩放/移动" aria-label="缩放/移动">⤢</button>
         <button class="mermaid-ctrl zoom-in" title="放大" aria-label="放大">+</button>
         <button class="mermaid-ctrl zoom-out" title="缩小" aria-label="缩小">−</button>
         <button class="mermaid-ctrl zoom-reset" title="重置" aria-label="重置">↺</button>
@@ -113,6 +114,11 @@
       let lastX = 0
       let lastY = 0
 
+      // Interactive mode is OFF by default – the diagram stays static so it
+      // cannot be grabbed/zoomed accidentally. Clicking the toggle button
+      // enables wheel-zoom and drag/pinch panning.
+      let interactEnabled = false
+
       // pinch-zoom state
       let pinchStartDist = 0
       let pinchStartScale = 1
@@ -123,18 +129,92 @@
 
       const clamp = (v: number) => Math.min(MAX, Math.max(MIN, v))
 
+      // Original viewBox – zoom is applied by re-rendering the SVG through its
+      // viewBox (vector re-render, always sharp at any zoom level), while pan
+      // uses a cheap CSS translate on the compositor.
+      const vb = svg.viewBox.baseVal
+      if (!vb || vb.width === 0 || vb.height === 0) return
+      const vbX = vb.x
+      const vbY = vb.y
+      const vbW = vb.width
+      const vbH = vb.height
+
+      // Fix the viewport and the SVG element to their initial rendered size so
+      // `overflow: hidden` actually clips the zoomed content; panning can then
+      // reveal the previously clipped regions.
+      const baseW = svg.getBoundingClientRect().width
+      const baseH = svg.getBoundingClientRect().height
+      viewport.style.width = `${baseW}px`
+      viewport.style.height = `${baseH}px`
+      svg.style.width = `${baseW}px`
+      svg.style.height = `${baseH}px`
+      svg.style.maxWidth = 'none'
+
+      const clampT = (v: number, max: number) =>
+        Math.min(max, Math.max(-max, v))
+
+      // Current viewBox origin. Zoom is anchored at the *viewport centre*:
+      // the content point currently under the visible centre (pan offset
+      // included) stays fixed while the viewBox is re-sized around it.
+      let vx = vbX
+      let vy = vbY
+
+      // Max pan offset for a given scale. Must never be negative: when the
+      // content is smaller than the viewport (scale <= 1) there is nothing to
+      // pan, so the bound is 0 – a negative bound would flip the clamp and
+      // shove the content towards the top-left on every zoom-out.
+      const maxPan = (size: number, s: number) =>
+        Math.max(0, (size * (s - 1)) / 2)
+
       const apply = () => {
-        svg.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`
+        svg.setAttribute('viewBox', `${vx} ${vy} ${vbW / scale} ${vbH / scale}`)
+        // keep the pan inside the zoomed content bounds
+        tx = clampT(tx, maxPan(baseW, scale))
+        ty = clampT(ty, maxPan(baseH, scale))
+        svg.style.transform = `translate(${tx}px, ${ty}px)`
       }
 
-      // --- wheel zoom (always from image centre) ---
-      viewport.addEventListener('wheel', (e) => {
-        e.preventDefault()
-        scale = clamp(scale + (e.deltaY < 0 ? STEP : -STEP))
+      // Zoom by `factor`, keeping the content point under the current
+      // viewport centre fixed (i.e. zoom around the visible centre).
+      const zoomAt = (factor: number) => {
+        const next = clamp(factor)
+        if (next === scale) return
+        // content point currently under the viewport centre, computed from
+        // the *actual* on-screen pan (before clamping) so the anchor matches
+        // what the user is really looking at
+        const vw = vbW / scale
+        const vh = vbH / scale
+        const anchorX = vx + ((baseW / 2 - tx) / baseW) * vw
+        const anchorY = vy + ((baseH / 2 - ty) / baseH) * vh
+        // clamp pan to the new bounds (0 when shrinking below 1×)
+        tx = clampT(tx, maxPan(baseW, next))
+        ty = clampT(ty, maxPan(baseH, next))
+        scale = next
+        const nw = vbW / scale
+        const nh = vbH / scale
+        // re-position the viewBox so that same content point stays centred
+        vx = anchorX - ((baseW / 2 - tx) / baseW) * nw
+        vy = anchorY - ((baseH / 2 - ty) / baseH) * nh
         apply()
+      }
+
+      const resetView = () => {
+        scale = 1
+        tx = 0
+        ty = 0
+        vx = vbX
+        vy = vbY
+        apply()
+      }
+
+      // --- wheel zoom (only in interactive mode) ---
+      viewport.addEventListener('wheel', (e) => {
+        if (!interactEnabled) return
+        e.preventDefault()
+        zoomAt(scale + (e.deltaY < 0 ? STEP : -STEP))
       }, { passive: false })
 
-      // --- pointer / touch pan ---
+      // --- pointer / touch pan (only in interactive mode) ---
       const onDown = (cx: number, cy: number) => {
         panning = true
         lastX = cx
@@ -144,10 +224,12 @@
       }
 
       viewport.addEventListener('mousedown', (e) => {
-        if (e.button === 0) onDown(e.clientX, e.clientY)
+        if (!interactEnabled || e.button !== 0) return
+        onDown(e.clientX, e.clientY)
       })
 
       viewport.addEventListener('touchstart', (e) => {
+        if (!interactEnabled) return
         if (e.touches.length === 1) {
           onDown(e.touches[0].clientX, e.touches[0].clientY)
         } else if (e.touches.length === 2) {
@@ -163,8 +245,8 @@
 
       const onMove = (cx: number, cy: number) => {
         if (!panning) return
-        tx += (cx - lastX) / scale
-        ty += (cy - lastY) / scale
+        tx += cx - lastX
+        ty += cy - lastY
         lastX = cx
         lastY = cy
         apply()
@@ -172,14 +254,14 @@
 
       window.addEventListener('mousemove', (e) => onMove(e.clientX, e.clientY))
       window.addEventListener('touchmove', (e) => {
+        if (!interactEnabled) return
         if (e.touches.length === 2) {
-          // pinch zoom – centre-based
+          // pinch zoom – anchored at the viewport centre
           const dist = Math.hypot(
             e.touches[0].clientX - e.touches[1].clientX,
             e.touches[0].clientY - e.touches[1].clientY
           )
-          scale = clamp(pinchStartScale * (dist / pinchStartDist))
-          apply()
+          zoomAt(pinchStartScale * (dist / pinchStartDist))
         } else if (e.touches.length === 1) {
           onMove(e.touches[0].clientX, e.touches[0].clientY)
         }
@@ -187,35 +269,43 @@
 
       const onUp = () => {
         panning = false
-        viewport.style.cursor = ''
+        viewport.style.cursor = interactEnabled ? 'grab' : ''
         svg.style.userSelect = ''
       }
 
       window.addEventListener('mouseup', onUp)
       window.addEventListener('touchend', onUp)
 
-      // --- double-click reset ---
+      // --- double-click reset (only in interactive mode) ---
       viewport.addEventListener('dblclick', () => {
-        scale = 1
-        tx = 0
-        ty = 0
-        apply()
+        if (!interactEnabled) return
+        resetView()
       })
+
+      // --- interactive-mode toggle ---
+      const toggleBtn = interactive.querySelector(
+        '.zoom-toggle'
+      ) as HTMLButtonElement
+      const setInteractive = (on: boolean) => {
+        interactEnabled = on
+        toggleBtn.classList.toggle('active', on)
+        viewport.style.cursor = on ? 'grab' : ''
+        if (!on) {
+          panning = false
+          svg.style.userSelect = ''
+        }
+      }
+      toggleBtn.addEventListener('click', () => setInteractive(!interactEnabled))
 
       // --- control buttons ---
       interactive.querySelector('.zoom-in')!.addEventListener('click', () => {
-        scale = clamp(scale + STEP * 2)
-        apply()
+        zoomAt(scale + STEP * 2)
       })
       interactive.querySelector('.zoom-out')!.addEventListener('click', () => {
-        scale = clamp(scale - STEP * 2)
-        apply()
+        zoomAt(scale - STEP * 2)
       })
       interactive.querySelector('.zoom-reset')!.addEventListener('click', () => {
-        scale = 1
-        tx = 0
-        ty = 0
-        apply()
+        resetView()
       })
 
       // --- prevent native image drag on the SVG ---
@@ -265,29 +355,29 @@
     width: 100%;
   }
 
-  /* Clipped viewport – the pan/zoom canvas. */
+  /* Clipped viewport – the pan/zoom canvas. Size is fixed by JS to the
+     initial SVG size so overflow can actually clip the zoomed content.
+     No cursor by default – grab cursor is applied via JS only when
+     interactive mode (zoom/pan) is enabled. */
   .mermaid-viewport {
     overflow: hidden;
-    cursor: grab;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80px;
+    position: relative;
+    margin: 0 auto;
   }
 
   .mermaid-viewport svg {
-    max-width: 100%;
-    height: auto;
-    transform-origin: center center;
-    will-change: transform;
-    /* disable transitions so zoom/pan feels instant */
+    display: block;
+    /* zoom re-renders the SVG via viewBox, so it stays sharp;
+       disable transitions so zoom/pan feels instant */
     transition: none;
+    /* let zoomed content draw outside the SVG box so panning can reveal it */
+    overflow: visible;
   }
 
-  /* Floating zoom controls – shown on hover. */
+  /* Floating zoom controls – shown on hover, top-right corner. */
   .mermaid-controls {
     position: absolute;
-    bottom: 6px;
+    top: 6px;
     right: 6px;
     display: flex;
     gap: 4px;
@@ -321,6 +411,17 @@
   .mermaid-ctrl:hover {
     background: #f3f4f6;
     border-color: #9ca3af;
+  }
+
+  /* Toggle button – highlighted while interactive mode is on. */
+  .mermaid-ctrl.zoom-toggle.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+  }
+
+  .mermaid-ctrl.zoom-toggle.active:hover {
+    background: #1d4ed8;
   }
 
   :global(.dark) .mermaid-ctrl {
