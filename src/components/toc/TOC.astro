@@ -65,15 +65,12 @@ const toc = generateToc(filterTocHeadings(headings))
     headingProgress: Record<string, HeadingProgress> = {}
     /** Top-level items that have subheadings */
     private parentSlugs = new Set<string>()
-    // Slug of the top-level item that was last clicked (null = the click
-    // collapsed the TOC; undefined = no pending click). While a click is
-    // pending, the "expand on scroll" behavior is locked so the click-
-    // triggered smooth scroll doesn't flicker between expanded items.
-    private pendingScrollTarget: string | null | undefined = undefined
+    // Slug of the top-level item that was last clicked (undefined = no
+    // pending click). While a click is pending, the "expand on scroll"
+    // behavior is locked so the click-triggered smooth scroll doesn't
+    // flicker between expanded items.
+    private pendingScrollTarget: string | undefined = undefined
     private pendingDirection: 'up' | 'down' | null = null
-    // Keeps everything collapsed after a collapse-click until the user
-    // scrolls on their own.
-    private collapsedUntilScroll = false
     private lastLockMove = 0
     private lastScrollY = 0
     private updateTimer: ReturnType<typeof setInterval> | undefined
@@ -110,23 +107,20 @@ const toc = generateToc(filterTocHeadings(headings))
       return current
     }
 
-    /** Accordion-style collapse / expand: clicking a heading with subheadings
-     *  opens it and collapses the others; clicking an already-open heading
-     *  collapses everything. */
+    /** Accordion-style expand: clicking a heading with subheadings opens it
+     *  and collapses the others. Clicking an already-open heading only
+     *  navigates and never collapses it. */
     toggleItem = (link: HTMLAnchorElement) => {
       const li = link.closest('li')
       const subList = li?.querySelector(SUBLIST_SELECTOR)
       if (!li || !subList) return false
 
+      // Open the clicked item if it is still collapsed (accordion behavior).
+      // An already-open item stays open: clicking it only navigates.
       if (li.classList.contains('collapsed')) {
         this.expandItem(li, subList)
-        this.pendingScrollTarget = getSlug(link.getAttribute('href'))
-        this.collapsedUntilScroll = false
-      } else {
-        this.collapseAll()
-        this.pendingScrollTarget = null
-        this.collapsedUntilScroll = true
       }
+      this.pendingScrollTarget = getSlug(link.getAttribute('href'))
       this.pendingDirection = null
       this.lastScrollY = window.scrollY
       this.lastLockMove = Date.now()
@@ -218,12 +212,6 @@ const toc = generateToc(filterTocHeadings(headings))
         }
       }
 
-      // After collapsing by click, keep everything collapsed until the user
-      // scrolls on their own (after the click-triggered scroll has stopped,
-      // i.e. once the pending click lock has been released).
-      if (this.collapsedUntilScroll && this.pendingScrollTarget === undefined && delta !== 0) {
-        this.collapsedUntilScroll = false
-      }
     }
 
     private clearPendingClick = () => {
@@ -234,7 +222,7 @@ const toc = generateToc(filterTocHeadings(headings))
     /** Reveal the section currently being read; collapse everything when
      *  above the first section (only top-level headings show). */
     private updateAccordion = () => {
-      if (this.pendingScrollTarget !== undefined || this.collapsedUntilScroll) return
+      if (this.pendingScrollTarget !== undefined) return
       const current = this.currentSectionSlug()
       if (!current) {
         this.collapseAll()
