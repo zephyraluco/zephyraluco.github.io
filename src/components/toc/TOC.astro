@@ -1,0 +1,324 @@
+---
+import type { MarkdownHeading } from 'astro'
+
+import { filterTocHeadings, generateToc } from './toc'
+import TOCHeading from './TOCHeading.astro'
+
+interface Props {
+  headings: MarkdownHeading[]
+  class?: string
+  id?: string
+}
+
+const { headings, class: className, ...props } = Astro.props
+
+// Only show headings of level 1 ~ 3
+const toc = generateToc(filterTocHeadings(headings))
+---
+
+<toc-heading class={className} {...props}>
+  <h2 class='font-medium'>TABLE OF CONTENTS</h2>
+  <ul id='toc-list' class='mt-4'>
+    {toc.map((heading) => (
+      <TOCHeading heading={heading} />
+    ))}
+  </ul>
+</toc-heading>
+
+<script>
+  interface TOCLink {
+    element: HTMLAnchorElement
+    progressBar: HTMLElement
+    slug: string
+  }
+
+  interface HeadingProgress {
+    inView: boolean
+    progress: number
+    // [heading top, next heading top] relative to the viewport top
+    range: [number, number]
+  }
+
+  const HEADING_SELECTOR =
+    'article h1, article h2, article h3, article h4, article h5, article h6'
+  const PARENT_SELECTOR = 'li:has(> ul)'
+  const SUBLIST_SELECTOR = ':scope > ul'
+  /** Fraction of the viewport height used as the reading reference line */
+  const REFERENCE_LINE_RATIO = 0.3
+  /** A pending click lock is dropped after this long without scroll (ms) */
+  const LOCK_STALE_MS = 800
+  /** Polling interval for position updates (ms) */
+  const UPDATE_INTERVAL_MS = 100
+  /** Delay before scrolling after subheadings were just revealed (ms) */
+  const SCROLL_DELAY_MS = 60
+  /** Offset compensation used when computing heading ranges */
+  const POST_OFFSET_COMPENSATION = 127
+  /** Max height of the reading progress bar, in percent */
+  const PROGRESS_BAR_HEIGHT_PCT = 90
+
+  const getSlug = (href: string | null | undefined): string => (href ?? '').replace(/^#/, '')
+
+  class TOC extends HTMLElement {
+    headings: HTMLElement[] = []
+    headingBySlug = new Map<string, HTMLElement>()
+    tocLinks: TOCLink[] = []
+    headingProgress: Record<string, HeadingProgress> = {}
+    /** Top-level items that have subheadings */
+    private parentSlugs = new Set<string>()
+    // Slug of the top-level item that was last clicked (null = the click
+    // collapsed the TOC; undefined = no pending click). While a click is
+    // pending, the "expand on scroll" behavior is locked so the click-
+    // triggered smooth scroll doesn't flicker between expanded items.
+    private pendingScrollTarget: string | null | undefined = undefined
+    private pendingDirection: 'up' | 'down' | null = null
+    // Keeps everything collapsed after a collapse-click until the user
+    // scrolls on their own.
+    private collapsedUntilScroll = false
+    private lastLockMove = 0
+    private lastScrollY = 0
+    private updateTimer: ReturnType<typeof setInterval> | undefined
+
+    constructor() {
+      super()
+      this.headings = Array.from(document.querySelectorAll(HEADING_SELECTOR))
+      this.headingBySlug = new Map(this.headings.map((h) => [h.id, h]))
+      this.tocLinks = Array.from(this.querySelectorAll('a[href^="#"]')).map((link) => ({
+        element: link as HTMLAnchorElement,
+        progressBar: link.previousElementSibling as HTMLElement,
+        slug: getSlug(link.getAttribute('href'))
+      }))
+      this.parentSlugs = new Set(
+        Array.from(this.querySelectorAll<HTMLLIElement>(PARENT_SELECTOR)).map((li) =>
+          getSlug(li.querySelector('a[href^="#"]')?.getAttribute('href'))
+        )
+      )
+      this.lastScrollY = window.scrollY
+      this.lastLockMove = Date.now()
+    }
+
+    /** The top-level heading of the section being read: the last one whose
+     *  top has passed the reading reference line near the top of the viewport. */
+    currentSectionSlug = (): string | null => {
+      const referenceLine = window.innerHeight * REFERENCE_LINE_RATIO
+      let current: string | null = null
+      for (const { slug } of this.tocLinks) {
+        const p = this.headingProgress[slug]
+        if (p && this.parentSlugs.has(slug) && p.range[0] <= referenceLine) {
+          current = slug
+        }
+      }
+      return current
+    }
+
+    /** Accordion-style collapse / expand: clicking a heading with subheadings
+     *  opens it and collapses the others; clicking an already-open heading
+     *  collapses everything. */
+    toggleItem = (link: HTMLAnchorElement) => {
+      const li = link.closest('li')
+      const subList = li?.querySelector(SUBLIST_SELECTOR)
+      if (!li || !subList) return false
+
+      if (li.classList.contains('collapsed')) {
+        this.expandItem(li, subList)
+        this.pendingScrollTarget = getSlug(link.getAttribute('href'))
+        this.collapsedUntilScroll = false
+      } else {
+        this.collapseAll()
+        this.pendingScrollTarget = null
+        this.collapsedUntilScroll = true
+      }
+      this.pendingDirection = null
+      this.lastScrollY = window.scrollY
+      this.lastLockMove = Date.now()
+      return true
+    }
+
+    updatePositionAndStyle = () => {
+      this.computeHeadingProgress()
+      this.updateHighlightStyles()
+      this.updateClickLock()
+      this.updateAccordion()
+    }
+
+    /** Recompute the viewport range and reading progress of every heading */
+    private computeHeadingProgress = () => {
+      const windowHeight = window.innerHeight
+      const content = document.querySelector('#content') as HTMLElement | null
+      const pageOffset = window.scrollY - (content?.offsetTop ?? 0)
+      const postOffset = (content?.offsetHeight ?? 0) + POST_OFFSET_COMPENSATION
+
+      this.headings.forEach((el, index) => {
+        const nextHeadingTop = this.headings[index + 1]?.offsetTop ?? postOffset
+        const range: [number, number] = [
+          el.offsetTop - pageOffset,
+          nextHeadingTop - pageOffset - el.offsetHeight
+        ]
+        const progress = (windowHeight - range[0]) / (range[1] - range[0])
+        this.headingProgress[el.id] = {
+          inView: range[0] < windowHeight && range[1] > 0,
+          progress: Math.max(0, Math.min(1, progress)),
+          range
+        }
+      })
+    }
+
+    /** Highlight the link of the section currently in view */
+    private updateHighlightStyles = () => {
+      this.tocLinks.forEach(({ element: el, progressBar: bar, slug }, i) => {
+        const p = this.headingProgress[slug]
+        if (!p) return
+        const { inView, progress } = p
+        const prevInView = this.headingProgress[this.tocLinks[i - 1]?.slug]?.inView
+        const nextInView = this.headingProgress[this.tocLinks[i + 1]?.slug]?.inView
+        el.classList.toggle('highlight', inView)
+        el.classList.toggle('highlight-bg-translucent', inView)
+        el.classList.toggle('rounded-t-2xl', inView && (i === 0 || !prevInView))
+        el.classList.toggle(
+          'rounded-b-2xl',
+          inView && (i === this.tocLinks.length - 1 || !nextInView)
+        )
+        bar.classList.toggle('is-read', !inView && progress === 1)
+        bar.classList.toggle('highlight-bg', inView)
+        bar.style.setProperty('height', `${progress * PROGRESS_BAR_HEIGHT_PCT}%`)
+      })
+    }
+
+    /** Manage the click lock that prevents flickering during click-triggered
+     *  smooth scrolling. The lock is released when:
+     *  - an expanding click reaches its target section, or
+     *  - the user scrolls back in the opposite direction (takes over), or
+     *  - the scrolling has stopped (no movement for a while). */
+    private updateClickLock = () => {
+      const now = Date.now()
+      const delta = window.scrollY - this.lastScrollY
+      this.lastScrollY = window.scrollY
+
+      if (this.pendingScrollTarget !== undefined) {
+        if (delta !== 0) {
+          const dir = delta > 0 ? 'down' : 'up'
+          if (this.pendingDirection && dir !== this.pendingDirection) {
+            // The user scrolled back the other way: they took over.
+            this.clearPendingClick()
+            return
+          }
+          this.pendingDirection ??= dir
+          this.lastLockMove = now
+        } else if (now - this.lastLockMove >= LOCK_STALE_MS) {
+          // The scrolling has stopped without reaching the target.
+          this.clearPendingClick()
+          return
+        }
+
+        // An expanding click reached its target section: release the lock.
+        if (
+          this.pendingScrollTarget &&
+          this.currentSectionSlug() === this.pendingScrollTarget
+        ) {
+          this.clearPendingClick()
+        }
+      }
+
+      // After collapsing by click, keep everything collapsed until the user
+      // scrolls on their own (after the click-triggered scroll has stopped,
+      // i.e. once the pending click lock has been released).
+      if (this.collapsedUntilScroll && this.pendingScrollTarget === undefined && delta !== 0) {
+        this.collapsedUntilScroll = false
+      }
+    }
+
+    private clearPendingClick = () => {
+      this.pendingScrollTarget = undefined
+      this.pendingDirection = null
+    }
+
+    /** Reveal the section currently being read; collapse everything when
+     *  above the first section (only top-level headings show). */
+    private updateAccordion = () => {
+      if (this.pendingScrollTarget !== undefined || this.collapsedUntilScroll) return
+      const current = this.currentSectionSlug()
+      if (!current) {
+        this.collapseAll()
+        return
+      }
+      const link = this.tocLinks.find((l) => l.slug === current)
+      const li = link?.element.closest('li')
+      const sub = li?.querySelector(SUBLIST_SELECTOR)
+      if (li && sub) this.expandItem(li, sub)
+    }
+
+    collapseAll = () => {
+      this.querySelectorAll<HTMLLIElement>(PARENT_SELECTOR).forEach((li) => {
+        li.classList.add('collapsed')
+        li.querySelector(SUBLIST_SELECTOR)?.setAttribute('hidden', '')
+      })
+    }
+
+    /** Expand the given item and collapse all other items with subheadings */
+    expandItem = (li: HTMLLIElement, subList: Element) => {
+      this.collapseAll()
+      li.classList.remove('collapsed')
+      subList.removeAttribute('hidden')
+    }
+
+    connectedCallback() {
+      // By default only show the top-level headings; subheadings are revealed
+      // by clicking a heading or by scrolling into its section.
+      this.collapseAll()
+
+      // Smooth scroll
+      this.tocLinks.forEach((link) => {
+        link.element.addEventListener('click', (e) => {
+          e.preventDefault()
+          // Items with subheadings toggle their subheadings on click
+          const hasChildren = this.toggleItem(link.element)
+          const heading = this.headingBySlug.get(link.slug)
+          if (!heading) {
+            console.warn(`No heading found for slug: ${link.slug}`)
+            return
+          }
+          history.pushState(null, heading.textContent || '', link.element.getAttribute('href'))
+          // Delay the scroll a bit so the (newly revealed) subheadings
+          // don't shift the target position while jumping.
+          const scrollToHeading = () => heading.scrollIntoView({ behavior: 'smooth' })
+          if (hasChildren) setTimeout(scrollToHeading, SCROLL_DELAY_MS)
+          else scrollToHeading()
+        })
+      })
+
+      this.updateTimer = setInterval(this.updatePositionAndStyle, UPDATE_INTERVAL_MS)
+      window.addEventListener('scroll', this.updatePositionAndStyle)
+    }
+
+    disconnectedCallback() {
+      if (this.updateTimer) clearInterval(this.updateTimer)
+      window.removeEventListener('scroll', this.updatePositionAndStyle)
+    }
+  }
+
+  // Guard against duplicate registration (e.g. when the module is re-evaluated)
+  if (!customElements.get('toc-heading')) {
+    customElements.define('toc-heading', TOC)
+  }</script>
+
+<style>
+  toc-heading :global(.toc-item) {
+    display: flow-root;
+  }
+  /* Indicator dot for items that have subheadings. All subheadings are
+     collapsed by default; clicking the parent heading jumps to the section
+     and reveals them. */
+  toc-heading li:has(> ul) > div > a::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-inline-end: 0.5rem;
+    border-radius: 9999px;
+    background-color: hsl(var(--muted-foreground) / 0.6);
+    transition: background-color 300ms;
+    vertical-align: middle;
+  }
+  toc-heading li:has(> ul) > div > a:hover::before {
+    background-color: hsl(var(--primary));
+  }
+</style>

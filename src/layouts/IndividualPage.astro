@@ -1,12 +1,13 @@
 ---
 import type { MarkdownHeading, MarkdownLayoutProps } from 'astro'
 
-import { BackToTop, TOC } from 'astro-pure/components/pages'
+import { BackToTop } from 'astro-pure/components/pages'
 import { Button, Icon } from 'astro-pure/user'
 import { cn } from 'astro-pure/utils'
 import config from 'virtual:config'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import Mermaid from '@/components/Mermaid.astro'
+import { TOC } from '@/components/toc'
 
 type Props = MarkdownLayoutProps<{
   title: string

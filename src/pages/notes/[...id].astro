@@ -2,11 +2,11 @@
 import { type CollectionEntry, render } from 'astro:content'
 
 import { MediumZoom } from 'astro-pure/advanced'
-import { TOC } from 'astro-pure/components/pages'
 import { getBlogCollection, sortMDByDate } from 'astro-pure/server'
 import { Button } from 'astro-pure/user'
 import PageLayout from '@/layouts/ContentLayout.astro'
 import Mermaid from '@/components/Mermaid.astro'
+import { TOC } from '@/components/toc'
 
 import NotesContents from './NotesContents.astro'
 
