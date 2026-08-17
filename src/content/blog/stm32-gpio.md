@@ -2,6 +2,7 @@
 title: 'stm32入门'
 description: 'STM32F103C8T6 学习记录'
 publishDate: '2026-02-26'
+draft: true
 ---
 
 > 学习stm32主要是为了了解常见的通信方式，因此关于其他嵌入式的内容仅作简单说明
