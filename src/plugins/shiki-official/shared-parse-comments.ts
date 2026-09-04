@@ -1,7 +1,10 @@
 // https://github.com/shikijs/shiki/blob/main/packages/transformers/src/shared/parse-comments.ts
 import type { Element, ElementContent } from 'hast'
-
 import type { MatchAlgorithm } from './shared-notation-transformer'
+
+const RE_SPLIT_COMMENT = /(\s+\/\/)/
+const RE_V1_END_COMMENT_PREFIX = /(?:\/\/|["'#]|;{1,2}|%{1,2}|--)(\s*)$/
+const RE_V3_END_COMMENT_PREFIX = /(?:\/\/|#|;{1,2}|%{1,2}|--)(\s*)$/
 
 export type ParsedComments = {
   line: Element
@@ -24,7 +27,7 @@ const matchers: [re: RegExp, endOfLine: boolean][] = [
   /**
    * for multi-line comments like this
    */
-  [/^(\*)(.+)$/, true]
+  [/^(\*)(.+)$/, true],
 ]
 
 /**
@@ -35,7 +38,7 @@ const matchers: [re: RegExp, endOfLine: boolean][] = [
 export function parseComments(
   lines: Element[],
   jsx: boolean,
-  matchAlgorithm: MatchAlgorithm
+  matchAlgorithm: MatchAlgorithm,
 ): ParsedComments {
   const out: ParsedComments = []
 
@@ -51,7 +54,7 @@ export function parseComments(
         const isLast = idx === line.children.length - 1
         const isComment = matchToken(token.value, isLast)
         if (!isComment) return element
-        const rawSplits = token.value.split(/(\s+\/\/)/)
+        const rawSplits = token.value.split(RE_SPLIT_COMMENT)
         if (rawSplits.length <= 1) return element
 
         let splits: string[] = [rawSplits[0]]
@@ -59,7 +62,8 @@ export function parseComments(
           splits.push(rawSplits[i] + (rawSplits[i + 1] || ''))
         }
         splits = splits.filter(Boolean)
-        if (splits.length <= 1) return element
+        if (splits.length <= 1)
+          return element
 
         return splits.map((split) => {
           return <Element>{
@@ -67,28 +71,32 @@ export function parseComments(
             children: [
               {
                 type: 'text',
-                value: split
-              }
-            ]
+                value: split,
+              },
+            ],
           }
         })
       })
 
-      if (splittedElements.length !== line.children.length) line.children = splittedElements
+      if (splittedElements.length !== line.children.length)
+        line.children = splittedElements
     }
 
     const elements = line.children
     let start = elements.length - 1
-    if (matchAlgorithm === 'v1') start = 0
+    if (matchAlgorithm === 'v1')
+      start = 0
     else if (jsx)
       // one step further for JSX as comment is inside curly brackets
       start = elements.length - 2
 
     for (let i = Math.max(start, 0); i < elements.length; i++) {
       const token = elements[i]
-      if (token.type !== 'element') continue
+      if (token.type !== 'element')
+        continue
       const head = token.children.at(0)
-      if (head?.type !== 'text') continue
+      if (head?.type !== 'text')
+        continue
 
       const isLast = i === elements.length - 1
       let match = matchToken(head.value, isLast)
@@ -198,7 +206,7 @@ function matchToken(
  * For matchAlgorithm v1
  */
 export function v1ClearEndCommentPrefix(text: string): string {
-  const match = text.match(/(?:\/\/|["'#]|;{1,2}|%{1,2}|--)(\s*)$/)
+  const match = text.match(RE_V1_END_COMMENT_PREFIX)
 
   if (match && match[1].trim().length === 0) {
     return text.slice(0, match.index)
@@ -213,7 +221,7 @@ export function v1ClearEndCommentPrefix(text: string): string {
  * For matchAlgorithm v3
  */
 export function v3ClearEndCommentPrefix(text: string): string {
-  const match = text.match(/(?:\/\/|#|;{1,2}|%{1,2}|--)(\s*)$/)
+  const match = text.match(RE_V3_END_COMMENT_PREFIX)
 
   if (match && match[1].trim().length === 0) {
     return text.slice(0, match.index).trimEnd()

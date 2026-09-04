@@ -1,7 +1,5 @@
-// https://github.com/shikijs/shiki/blob/main/packages/transformers/src/shared/notation-transformer.ts
 import type { ShikiTransformer, ShikiTransformerContext } from '@shikijs/core'
 import type { Element, Text } from 'hast'
-
 import type { ParsedComments } from './shared-parse-comments'
 import { parseComments, v1ClearEndCommentPrefix } from './shared-parse-comments'
 
@@ -26,38 +24,33 @@ export function createCommentNotationTransformer(
     line: Element,
     commentNode: Element,
     lines: Element[],
-    index: number
+    index: number,
   ) => boolean,
-  matchAlgorithm: MatchAlgorithm | undefined
+  matchAlgorithm: MatchAlgorithm | undefined,
 ): ShikiTransformer {
-  if (matchAlgorithm == null) {
-    matchAlgorithm = 'v3'
-  }
+  matchAlgorithm ??= 'v3'
 
   return {
     name,
     code(code) {
-      const lines = code.children.filter((i) => i.type === 'element')
+      const lines = code.children.filter(i => i.type === 'element')
       const linesToRemove: (Element | Text)[] = []
 
-      // biome-ignore lint: the original file used any
       code.data ??= {} as any
       const data = code.data as {
         _shiki_notation?: ParsedComments
       }
 
-      data._shiki_notation ??= parseComments(
-        lines,
-        ['jsx', 'tsx'].includes(this.options.lang),
-        matchAlgorithm
-      )
+      data._shiki_notation ??= parseComments(lines, ['jsx', 'tsx'].includes(this.options.lang), matchAlgorithm)
       const parsed = data._shiki_notation
 
       for (const comment of parsed) {
-        if (comment.info[1].length === 0) continue
+        if (comment.info[1].length === 0)
+          continue
 
         let lineIdx = lines.indexOf(comment.line)
-        if (comment.isLineCommentOnly && matchAlgorithm !== 'v1') lineIdx++
+        if (comment.isLineCommentOnly && matchAlgorithm !== 'v1')
+          lineIdx++
 
         let replaced = false
         comment.info[1] = comment.info[1].replace(regex, (...match) => {
@@ -118,9 +111,10 @@ export function createCommentNotationTransformer(
         const index = code.children.indexOf(line)
         const nextLine = code.children[index + 1]
         let removeLength = 1
-        if (nextLine?.type === 'text' && nextLine?.value === '\n') removeLength = 2
+        if (nextLine?.type === 'text' && nextLine?.value === '\n')
+          removeLength = 2
         code.children.splice(index, removeLength)
       }
-    }
+    },
   }
 }
