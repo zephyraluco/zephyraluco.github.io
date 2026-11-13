@@ -1,7 +1,8 @@
 ---
-import { Footer, Header, ThemeProvider } from 'astro-pure/components/basic'
+import { Footer, ThemeProvider } from 'astro-pure/components/basic'
 import type { SiteMeta } from 'astro-pure/types'
 import BaseHead from '@/components/BaseHead.astro'
+import Header from '@/components/Header.astro'
 import config from '@/site-config'
 
 // Import the global.css file here so that it is included on
@@ -28,15 +29,13 @@ const {
   </head>
 
   <body class='flex justify-center bg-background text-foreground' {...props}>
-    {
-      highlightColor && (
-        <div
-          id='highlight-gradient'
-          class='pointer-events-none absolute start-0 top-0 z-0 h-screen w-full opacity-25'
-          style={`background-image:linear-gradient(${highlightColor},transparent)`}
-        />
-      )
-    }
+    {highlightColor && (
+      <div
+        id='highlight-gradient'
+        class='pointer-events-none absolute start-0 top-0 z-0 h-screen w-full opacity-25'
+        style={`background-image:linear-gradient(${highlightColor},transparent)`}
+      />
+    )}
     <div
       id='main-container'
       class='w-full max-w-[70rem] min-h-[100dvh] flex flex-col justify-between'

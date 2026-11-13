@@ -33,6 +33,12 @@ export default defineConfig({
   trailingSlash: 'never',
   // root: './my-project-directory',
   server: { host: true },
+  vite: {
+    optimizeDeps: {
+      // Theme utilities import virtual:config, which is resolved by the Astro integration.
+      exclude: ['astro-pure/utils']
+    }
+  },
 
   // [Adapter]
   // https://docs.astro.build/en/guides/deploy/
