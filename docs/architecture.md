@@ -54,3 +54,12 @@
 质量检查工作流执行锁文件安装、单元测试、完整构建和生产预览浏览器测试。部署仍由原有 GitHub Pages 工作流负责。Pagefind 索引只在静态构建后生成，开发服务不提供全文搜索。
 
 远程字体与 GitHub 活跃图仍在构建时请求公共服务，Waline 与语录需要浏览器可访问各自服务。外部服务不可用时，语录回退；评论服务的真实数据和写入不属于离线回归测试范围。
+
+## Astro 7 / TypeScript 7
+
+- 应用依赖 Astro 7.4.11、TypeScript 7.0.2，官方 MDX 集成升级至 8.x。
+- `markdown.processor: unified(...)` 显式保留原有插件；MDX 继承同一流程。`compressHTML: true` 保留升级前的行内空白行为，移除已成为默认行为的 queuedRendering 实验开关。
+- `bun run check` 先同步内容类型，再执行 TS7 原生编译检查，最后通过工具工作区检查 Astro 模板。
+- Astro 检查器和 ESLint 解析器暂不支持 TS7 的原生语言服务 API。兼容用 TS6 仅存在于工具依赖树，使用 Bun workspace 和 isolated linker 隔离，不能用删除原生检查的方式绕开升级。
+- `.astro` 组件直接在 Astro 文件中导入，不通过 `.ts` barrel 再导出，避免原生 TS 编译器误把组件当作普通 TS 模块解析。
+- HAST 类型统一至 3.0.5，避免自定义 Shiki/Markdown 插件因重复类型树而失配。没有使用类型忽略来跳过这些插件的检查。

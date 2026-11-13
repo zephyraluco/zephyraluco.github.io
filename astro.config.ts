@@ -1,5 +1,5 @@
 import type { RemarkPlugins } from 'astro'
-import { rehypeHeadingIds } from '@astrojs/markdown-remark'
+import { rehypeHeadingIds, unified } from '@astrojs/markdown-remark'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import UnoCSS from '@unocss/astro'
@@ -40,6 +40,8 @@ export default defineConfig({
   server: { host: true },
   scopedStyleStrategy: 'where',
   prefetch: { prefetchAll: true },
+  // Preserve the existing spacing between inline elements across the v7 upgrade.
+  compressHTML: true,
 
   // [Adapter]
   // https://docs.astro.build/en/guides/deploy/
@@ -69,34 +71,37 @@ export default defineConfig({
       type: 'shiki',
       excludeLangs: ['math', 'mermaid']
     },
-    remarkPlugins: [
-      remarkMath,
-      remarkReadingTime,
-      ...(config.integ.mediumZoom.enable
-        ? [[remarkAddZoomable, config.integ.mediumZoom.options] as RemarkPlugins[number]]
-        : [])
-    ],
-    rehypePlugins: [
-      [rehypeKatex, {}],
-      [
-        rehypeExternalLinks,
-        {
-          content: { type: 'text', value: config.content.externalLinks.content },
-          contentProperties: config.content.externalLinks.properties
-        }
+    // Keep the existing Remark/Rehype extensions for Markdown and MDX.
+    processor: unified({
+      remarkPlugins: [
+        remarkMath,
+        remarkReadingTime,
+        ...(config.integ.mediumZoom.enable
+          ? [[remarkAddZoomable, config.integ.mediumZoom.options] as RemarkPlugins[number]]
+          : [])
       ],
-      ...(config.content.imageCaption ? [rehypeImageCaption] : []),
-      rehypeMermaid,
-      rehypeHeadingIds,
-      [
-        rehypeAutolinkHeadings,
-        {
-          behavior: 'append',
-          properties: { className: ['anchor'] },
-          content: { type: 'text', value: '#' }
-        }
+      rehypePlugins: [
+        [rehypeKatex, {}],
+        [
+          rehypeExternalLinks,
+          {
+            content: { type: 'text', value: config.content.externalLinks.content },
+            contentProperties: config.content.externalLinks.properties
+          }
+        ],
+        ...(config.content.imageCaption ? [rehypeImageCaption] : []),
+        rehypeMermaid,
+        rehypeHeadingIds,
+        [
+          rehypeAutolinkHeadings,
+          {
+            behavior: 'append',
+            properties: { className: ['anchor'] },
+            content: { type: 'text', value: '#' }
+          }
+        ]
       ]
-    ],
+    }),
     // https://docs.astro.build/en/guides/syntax-highlighting/
     shikiConfig: {
       themes: {
@@ -104,25 +109,15 @@ export default defineConfig({
         dark: 'one-dark-pro'
       },
       transformers: [
-        // Two copies of @shikijs/types (one under node_modules
-        // and another nested under @astrojs/markdown-remark → shiki).
         // Official transformers
-        // @ts-ignore this happens due to multiple versions of shiki types
         transformerNotationDiff(),
-        // @ts-ignore this happens due to multiple versions of shiki types
         transformerNotationHighlight(),
-        // @ts-ignore this happens due to multiple versions of shiki types
         transformerRemoveNotationEscape(),
         // Custom transformers
-        // @ts-ignore this happens due to multiple versions of shiki types
         updateStyle(),
-        // @ts-ignore this happens due to multiple versions of shiki types
         addTitle(),
-        // @ts-ignore this happens due to multiple versions of shiki types
         addLanguage(),
-        // @ts-ignore this happens due to multiple versions of shiki types
         addCopyButton(2000), // timeout in ms
-        // @ts-ignore this happens due to multiple versions of shiki types
         addCollapse(15) // max lines that needs to collapse
       ]
     }
@@ -146,11 +141,7 @@ export default defineConfig({
     svgOptimizer: svgoOptimizer(),
     // Enables pre-rendering your prefetched pages on the client in supported browsers.
     // https://docs.astro.build/en/reference/experimental-flags/client-prerender/
-    clientPrerender: true,
-    // https://docs.astro.build/en/reference/experimental-flags/queued-rendering/
-    queuedRendering: {
-      enabled: true
-    }
+    clientPrerender: true
   },
 
   // Enable font preloading and optimization

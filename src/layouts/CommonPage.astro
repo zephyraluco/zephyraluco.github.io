@@ -2,9 +2,10 @@
 import type { MarkdownHeading } from 'astro'
 
 import PageLayout from '@/layouts/ContentLayout.astro'
-import { TOC } from '@/components/toc'
-import { Comment, PageInfo } from '@/components/waline'
 import Mermaid from '@/components/Mermaid.astro'
+import TOC from '@/components/toc/TOC.astro'
+import Comment from '@/components/waline/Comment.astro'
+import PageInfo from '@/components/waline/PageInfo.astro'
 
 interface Props {
   title: string

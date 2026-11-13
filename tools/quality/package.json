@@ -1,0 +1,17 @@
+{
+  "name": "@zeal/quality",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "astro-check --root ../..",
+    "lint": "cd ../.. && eslint --config tools/quality/eslint.config.mjs src",
+    "lint:fix": "cd ../.. && eslint --config tools/quality/eslint.config.mjs src --fix"
+  },
+  "dependencies": {
+    "@astrojs/check": "0.9.12",
+    "typescript": "6.0.3",
+    "eslint": "^10.14.0",
+    "eslint-plugin-astro": "^3.2.1",
+    "@typescript-eslint/parser": "^8.72.2"
+  }
+}

@@ -1,6 +1,6 @@
 # Zeal' Lab
 
-基于 Astro 6、MDX、UnoCSS 和 Pagefind 的个人博客与笔记站点。组件、内容处理工具和构建集成均由当前项目维护，不再依赖 `astro-pure` 包。
+基于 Astro 7、TypeScript 7、MDX、UnoCSS 和 Pagefind 的个人博客与笔记站点。组件、内容处理工具和构建集成均由当前项目维护，不再依赖 `astro-pure` 包。
 
 [English](README.md) · [架构与扩展指南](docs/architecture.md)
 
@@ -43,3 +43,9 @@ GitHub Actions 执行质量检查，并在 `main` 更新时部署到 GitHub Page
 ## 来源与授权
 
 初始设计及迁移组件来自 [Astro Theme Pure](https://github.com/cworld1/astro-theme-pure)，已在本地修改维护。详见 [第三方声明](THIRD_PARTY_NOTICES.md) 和 [上游许可证](LICENSE-astro-pure)。
+
+## TypeScript 工具兼容
+
+应用使用 TypeScript 7.0.2。`bun run check` 依次执行 `astro sync`、TS7 原生 `tsc --noEmit` 和 `bun run check:astro`，后者检查 `.astro` 组件。目前 Astro 检查器及 ESLint 解析器仍依赖 TS6 的语言服务 API，因此将它们连同精确版本 6.0.3 隔离在 `tools/quality`，不替代应用的 TS7 编译器。请使用项目脚本，不直接执行 `astro check`。
+
+`bunfig.toml` 使用隔离依赖安装，保证全新安装时也能正确区分两套工具。从仓库根目录安装依赖即可。Markdown 与 MDX 显式使用 Unified，保留现有 Remark/Rehype 扩展。
