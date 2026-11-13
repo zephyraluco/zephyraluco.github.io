@@ -5,11 +5,10 @@ publishDate: '2026-07-26'
 updatedDate: '2026-09-06'
 ---
 
-import Aside from '../../../components/ui/Aside.astro'
-
-<Aside type='note' title='信息'>
-  stm32+rtthread集成项目：[stm32-nano](https://github.com/zephyraluco/stm32-nano)
-</Aside>
+> [!NOTE]
+> **信息**
+>
+> stm32+rtthread集成项目：[stm32-nano](https://github.com/zephyraluco/stm32-nano)
 
 ## 环境搭建(MacOS)
 

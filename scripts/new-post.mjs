@@ -7,13 +7,12 @@ const { values, positionals } = parseArgs({
   options: {
     lang: { type: 'string', short: 'l' },
     draft: { type: 'boolean', short: 'd' },
-    mdx: { type: 'boolean', short: 'm' },
     folder: { type: 'boolean', short: 'f' },
     help: { type: 'boolean', short: 'h' }
   }
 })
 if (values.help) {
-  console.log('Usage: bun run new:post [--draft] [--mdx] [--folder] [--lang zh] "Post title"')
+  console.log('Usage: bun run new:post [--draft] [--folder] [--lang zh] "Post title"')
 } else {
   const title = positionals.join(' ').trim() || 'Untitled'
   const slug =
@@ -23,7 +22,7 @@ if (values.help) {
       .replace(/[^\p{L}\p{N}]+/gu, '-')
       .replace(/^-|-$/g, '') || 'untitled'
   const directory = join('src/content/blog', values.folder ? slug : '')
-  const filename = `${values.folder ? 'index' : slug}.${values.mdx ? 'mdx' : 'md'}`
+  const filename = `${values.folder ? 'index' : slug}.md`
   const fields = {
     title,
     description: 'Write your description here.',

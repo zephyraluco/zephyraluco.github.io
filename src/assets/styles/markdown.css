@@ -1,0 +1,134 @@
+/* Duckquill-inspired styling is limited to alerts, tables, code, math and diagrams. */
+.prose .markdown-alert {
+  --alert-color: hsl(var(--primary));
+  margin-block: 1.5rem;
+  border-inline-start: 0.25rem solid var(--alert-color);
+  border-radius: 0.25rem 0.75rem 0.75rem 0.25rem;
+  padding: 1rem 1.25rem;
+  background: color-mix(in srgb, var(--alert-color) 8%, hsl(var(--background)));
+  color: hsl(var(--foreground) / 0.88);
+}
+.prose .markdown-alert-tip {
+  --alert-color: #237847;
+}
+.prose .markdown-alert-important {
+  --alert-color: #7954ad;
+}
+.prose .markdown-alert-warning {
+  --alert-color: #94600a;
+}
+.prose .markdown-alert-caution {
+  --alert-color: #b43d42;
+}
+.prose .markdown-alert > :first-child {
+  margin-block-start: 0;
+}
+.prose .markdown-alert > :last-child {
+  margin-block-end: 0;
+}
+.prose .markdown-alert .markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block: 0 0.5rem;
+  color: var(--alert-color);
+  font-weight: 700;
+}
+.prose .markdown-alert-title::before {
+  content: '';
+  flex: 0 0 1.1rem;
+  height: 1.1rem;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2' d='M12 8v5m0 3v1M12 3 2 21h20Z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+.prose
+  :is(.markdown-alert-note, .markdown-alert-tip, .markdown-alert-important)
+  .markdown-alert-title::before {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath stroke='black' stroke-width='2' d='M12 10v7m0-10v1'/%3E%3C/svg%3E");
+}
+
+.dark .prose .markdown-alert-tip {
+  --alert-color: #83d6a2;
+}
+.dark .prose .markdown-alert-important {
+  --alert-color: #c8a5f1;
+}
+.dark .prose .markdown-alert-warning {
+  --alert-color: #f4cf75;
+}
+.dark .prose .markdown-alert-caution {
+  --alert-color: #ff9da1;
+}
+
+.prose .astro-code {
+  margin-block: 1.5rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.85rem;
+  box-shadow: 0 5px 15px -10px hsl(var(--foreground) / 0.2);
+}
+.prose .astro-code pre {
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+.prose table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  margin-block: 1.5rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: hsl(var(--muted) / 0.45);
+  font-size: 0.9em;
+}
+.prose :is(th, td) {
+  padding: 0.65rem 1rem;
+  border: 0;
+}
+.prose :is(th, td):first-child {
+  padding-inline-start: 1rem;
+}
+.prose th {
+  background: hsl(var(--foreground) / 0.07);
+  font-weight: 700;
+}
+.prose tbody tr:nth-child(even) {
+  background: hsl(var(--foreground) / 0.035);
+}
+
+/* KaTeX keeps its mathematical typography; wide equations scroll within the article. */
+.prose .katex-display {
+  max-width: 100%;
+  margin-block: 1.5rem;
+  padding: 0.75rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.prose .mermaid {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.85rem;
+  background: hsl(var(--muted) / 0.45);
+  box-shadow: 0 5px 15px -10px hsl(var(--foreground) / 0.2);
+}
+.prose .mermaid .mermaid-interactive {
+  min-width: 0;
+}
+.prose .mermaid .mermaid-ctrl {
+  border-color: hsl(var(--border));
+  border-radius: 0.5rem;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+.prose .mermaid .mermaid-ctrl:hover {
+  background: hsl(var(--muted));
+}
+.prose .mermaid .mermaid-ctrl.active {
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary));
+  color: hsl(var(--background));
+}

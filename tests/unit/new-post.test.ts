@@ -11,16 +11,23 @@ afterEach(async () => {
   await Promise.all(directories.splice(0).map((dir) => rm(dir, { recursive: true, force: true })))
 })
 
-test('creates a valid MDX draft with language and protects existing content', async () => {
+test('creates a valid Markdown draft with language and protects existing content', async () => {
   const cwd = await mkdtemp(join(tmpdir(), 'new-post-'))
   directories.push(cwd)
-  const args = [script, '--draft', '--mdx', '--folder', '--lang', 'zh', 'Hello: "World"']
+  const args = [script, '--draft', '--folder', '--lang', 'zh', 'Hello: "World"']
   expect(spawnSync('node', args, { cwd }).status).toBe(0)
-  const file = join(cwd, 'src/content/blog/hello-world/index.mdx')
+  const file = join(cwd, 'src/content/blog/hello-world/index.md')
   const content = await readFile(file, 'utf8')
   expect(content).toContain('draft: true')
   expect(content).toContain('language: "zh"')
   expect(content).toContain(`title: ${JSON.stringify('Hello: "World"')}`)
   expect(spawnSync('node', args, { cwd }).status).not.toBe(0)
   expect(await readFile(file, 'utf8')).toBe(content)
+})
+
+test('rejects the removed MDX creation option', async () => {
+  const cwd = await mkdtemp(join(tmpdir(), 'new-post-mdx-'))
+  directories.push(cwd)
+  const result = spawnSync('node', [script, '--mdx', 'Unsupported'], { cwd })
+  expect(result.status).not.toBe(0)
 })

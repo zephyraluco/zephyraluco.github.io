@@ -10,7 +10,7 @@
     "sync": "astro sync",
     "check": "astro sync && tsc --noEmit && bun run check:astro",
     "astro": "astro",
-    "format": "prettier --write  '**/*.{js,jsx,ts,tsx,md,mdx,astro}'",
+    "format": "prettier --write  '**/*.{js,jsx,ts,tsx,md,astro}'",
     "lint": "bun run --cwd tools/quality lint",
     "yijiansilian": "bun lint && bun sync && bun check && bun format",
     "clean": "rm -rf .astro .vercel dist",
@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@astrojs/markdown-remark": "7.3.8",
-    "@astrojs/mdx": "8.1.5",
     "@astrojs/rss": "4.0.19",
     "@astrojs/sitemap": "3.7.4",
     "@pagefind/default-ui": "1.5.2",

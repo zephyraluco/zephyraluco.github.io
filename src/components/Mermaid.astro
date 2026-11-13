@@ -20,9 +20,7 @@
     private lastTheme: 'dark' | 'light' | undefined
 
     private currentTheme(): 'dark' | 'light' {
-      return document.documentElement.classList.contains('dark')
-        ? 'dark'
-        : 'light'
+      return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
     }
 
     private async loadMermaid(): Promise<MermaidApi> {
@@ -33,18 +31,35 @@
     }
 
     private async renderAll() {
-      const nodes = Array.from(
-        document.querySelectorAll<HTMLElement>('div.mermaid')
-      )
+      const nodes = Array.from(document.querySelectorAll<HTMLElement>('div.mermaid'))
       if (nodes.length === 0) return
 
       const mermaid = await this.loadMermaid()
       const theme = this.currentTheme()
 
       if (!this.initialized || this.lastTheme !== theme) {
+        const styles = getComputedStyle(document.documentElement)
+        const context = document.createElement('canvas').getContext('2d')
+        const color = (token: string) => {
+          const value = `hsl(${styles.getPropertyValue(token).trim()})`
+          if (!context) return value
+          context.fillStyle = value
+          return context.fillStyle
+        }
         mermaid.initialize({
           startOnLoad: false,
-          theme: theme === 'dark' ? 'dark' : 'default',
+          theme: 'base',
+          themeVariables: {
+            darkMode: theme === 'dark',
+            primaryColor: color('--muted'),
+            primaryTextColor: color('--foreground'),
+            primaryBorderColor: color('--border'),
+            secondaryColor: color('--background'),
+            tertiaryColor: color('--muted'),
+            lineColor: color('--primary'),
+            textColor: color('--foreground'),
+            edgeLabelBackground: color('--background')
+          },
           securityLevel: 'loose',
           fontFamily: 'inherit'
         })
@@ -150,8 +165,7 @@
       svg.style.height = `${baseH}px`
       svg.style.maxWidth = 'none'
 
-      const clampT = (v: number, max: number) =>
-        Math.min(max, Math.max(-max, v))
+      const clampT = (v: number, max: number) => Math.min(max, Math.max(-max, v))
 
       // Current viewBox origin. Zoom is anchored at the *viewport centre*:
       // the content point currently under the visible centre (pan offset
@@ -163,8 +177,7 @@
       // content is smaller than the viewport (scale <= 1) there is nothing to
       // pan, so the bound is 0 – a negative bound would flip the clamp and
       // shove the content towards the top-left on every zoom-out.
-      const maxPan = (size: number, s: number) =>
-        Math.max(0, (size * (s - 1)) / 2)
+      const maxPan = (size: number, s: number) => Math.max(0, (size * (s - 1)) / 2)
 
       const apply = () => {
         svg.setAttribute('viewBox', `${vx} ${vy} ${vbW / scale} ${vbH / scale}`)
@@ -208,11 +221,15 @@
       }
 
       // --- wheel zoom (only in interactive mode) ---
-      viewport.addEventListener('wheel', (e) => {
-        if (!interactEnabled) return
-        e.preventDefault()
-        zoomAt(scale + (e.deltaY < 0 ? STEP : -STEP))
-      }, { passive: false })
+      viewport.addEventListener(
+        'wheel',
+        (e) => {
+          if (!interactEnabled) return
+          e.preventDefault()
+          zoomAt(scale + (e.deltaY < 0 ? STEP : -STEP))
+        },
+        { passive: false }
+      )
 
       // --- pointer / touch pan (only in interactive mode) ---
       const onDown = (cx: number, cy: number) => {
@@ -228,20 +245,24 @@
         onDown(e.clientX, e.clientY)
       })
 
-      viewport.addEventListener('touchstart', (e) => {
-        if (!interactEnabled) return
-        if (e.touches.length === 1) {
-          onDown(e.touches[0].clientX, e.touches[0].clientY)
-        } else if (e.touches.length === 2) {
-          // begin pinch
-          panning = false
-          pinchStartDist = Math.hypot(
-            e.touches[0].clientX - e.touches[1].clientX,
-            e.touches[0].clientY - e.touches[1].clientY
-          )
-          pinchStartScale = scale
-        }
-      }, { passive: true })
+      viewport.addEventListener(
+        'touchstart',
+        (e) => {
+          if (!interactEnabled) return
+          if (e.touches.length === 1) {
+            onDown(e.touches[0].clientX, e.touches[0].clientY)
+          } else if (e.touches.length === 2) {
+            // begin pinch
+            panning = false
+            pinchStartDist = Math.hypot(
+              e.touches[0].clientX - e.touches[1].clientX,
+              e.touches[0].clientY - e.touches[1].clientY
+            )
+            pinchStartScale = scale
+          }
+        },
+        { passive: true }
+      )
 
       const onMove = (cx: number, cy: number) => {
         if (!panning) return
@@ -253,19 +274,23 @@
       }
 
       window.addEventListener('mousemove', (e) => onMove(e.clientX, e.clientY))
-      window.addEventListener('touchmove', (e) => {
-        if (!interactEnabled) return
-        if (e.touches.length === 2) {
-          // pinch zoom – anchored at the viewport centre
-          const dist = Math.hypot(
-            e.touches[0].clientX - e.touches[1].clientX,
-            e.touches[0].clientY - e.touches[1].clientY
-          )
-          zoomAt(pinchStartScale * (dist / pinchStartDist))
-        } else if (e.touches.length === 1) {
-          onMove(e.touches[0].clientX, e.touches[0].clientY)
-        }
-      }, { passive: true })
+      window.addEventListener(
+        'touchmove',
+        (e) => {
+          if (!interactEnabled) return
+          if (e.touches.length === 2) {
+            // pinch zoom – anchored at the viewport centre
+            const dist = Math.hypot(
+              e.touches[0].clientX - e.touches[1].clientX,
+              e.touches[0].clientY - e.touches[1].clientY
+            )
+            zoomAt(pinchStartScale * (dist / pinchStartDist))
+          } else if (e.touches.length === 1) {
+            onMove(e.touches[0].clientX, e.touches[0].clientY)
+          }
+        },
+        { passive: true }
+      )
 
       const onUp = () => {
         panning = false
@@ -283,9 +308,7 @@
       })
 
       // --- interactive-mode toggle ---
-      const toggleBtn = interactive.querySelector(
-        '.zoom-toggle'
-      ) as HTMLButtonElement
+      const toggleBtn = interactive.querySelector('.zoom-toggle') as HTMLButtonElement
       const setInteractive = (on: boolean) => {
         interactEnabled = on
         toggleBtn.classList.toggle('active', on)
@@ -405,7 +428,9 @@
     justify-content: center;
     line-height: 1;
     padding: 0;
-    transition: background 0.15s, border-color 0.15s;
+    transition:
+      background 0.15s,
+      border-color 0.15s;
   }
 
   .mermaid-ctrl:hover {

@@ -1,6 +1,6 @@
 # Zeal' Lab
 
-A personal blog and notes site built with Astro 7 and TypeScript 7, MDX, UnoCSS and Pagefind. UI components, content utilities and build configuration live in this repository; the site does not depend on `astro-pure` at runtime or build time.
+A personal blog and notes site built with Astro 7 and TypeScript 7, Markdown, UnoCSS and Pagefind. UI components, content utilities and build configuration live in this repository; the site does not depend on `astro-pure` at runtime or build time.
 
 [中文说明](README-zh-CN.md) · [Architecture and extension guide](docs/architecture.md)
 
@@ -11,7 +11,7 @@ Use Node.js 24 and Bun 1.3.14.
 ```sh
 bun install --frozen-lockfile
 bun run dev
-bun run new:post --draft --mdx --folder --lang zh "Post title"
+bun run new:post --draft --folder --lang zh "Post title"
 bun run test
 bun run build
 bun run preview
@@ -46,4 +46,6 @@ The original design and migrated components derive from [Astro Theme Pure](https
 
 The application uses TypeScript 7.0.2. `bun run check` runs `astro sync`, the native `tsc --noEmit`, and then `bun run check:astro` for `.astro` diagnostics. Astro's current checker and the ESLint parser still require the TypeScript 6 Language Service API; their exact 6.0.3 dependency is isolated in `tools/quality`. This does not replace the application's TypeScript 7 compiler. Use the package scripts rather than invoking `astro check` directly.
 
-`bunfig.toml` selects isolated dependency linking, so fresh installs preserve these compiler boundaries. Install dependencies from the repository root. Markdown and MDX explicitly retain the Unified processor to preserve the existing Remark/Rehype extensions.
+`bunfig.toml` selects isolated dependency linking, so fresh installs preserve these compiler boundaries. Install dependencies from the repository root. Markdown explicitly retain the Unified processor to preserve the existing Remark/Rehype extensions.
+
+Markdown authoring and supported alerts: [Markdown guide](docs/markdown.md).

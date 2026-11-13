@@ -19,3 +19,11 @@ uses Pagefind's public API directly.
 
 Upstream source references for utilities adapted from other projects remain in their
 respective files. Existing project design and source attributions are preserved.
+
+## Duckquill
+
+Table, alert, equation, code-block and diagram styling take inspiration from
+[Duckquill](https://codeberg.org/daudix/duckquill) by Daudix (MIT license).
+The local implementation adapts the design to Astro and the project's theme tokens;
+it does not use Zola components or shortcodes. The upstream license is retained in
+[LICENSE-duckquill](LICENSE-duckquill).

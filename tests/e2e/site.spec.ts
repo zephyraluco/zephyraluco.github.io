@@ -51,9 +51,11 @@ test('production search returns indexed articles', async ({ page }) => {
   await expect(page.locator('.pagefind-ui__result-link').first()).toContainText(/CycloneDDS/i)
 })
 
-test('MDX, reading metadata, headings and bundled lightbox remain functional', async ({ page }) => {
+test('Markdown alerts, reading metadata, headings and bundled lightbox remain functional', async ({
+  page
+}) => {
   await page.goto('/blog/tspi')
-  await expect(page.locator('aside').first()).toBeVisible()
+  await expect(page.locator('.markdown-alert-caution').first()).toBeVisible()
   await expect(page.locator('.article-info')).toContainText(/min/)
   await expect(page.locator('.prose h2[id]').first()).toBeVisible()
   const image = page.locator('img.zoomable.medium-zoom-image').first()
@@ -68,6 +70,10 @@ test('notes render Mermaid with the local content pipeline', async ({ page }) =>
   await page.goto('/notes/embedded/' + encodeURIComponent('内存布局'))
   await expect(page.locator('.mermaid svg').first()).toBeVisible({ timeout: 30000 })
   await expect(page.locator('.mermaid svg').first()).not.toContainText('Syntax error')
+  const node = page.locator('.mermaid .node rect').first()
+  const lightFill = await node.evaluate((el) => getComputedStyle(el).fill)
+  await page.locator('.theme-toggle').click()
+  await expect.poll(() => node.evaluate((el) => getComputedStyle(el).fill)).not.toBe(lightFill)
 })
 
 test('quote errors fall back without uncaught exceptions', async ({ page }) => {
@@ -101,4 +107,38 @@ test('quote adapter renders a successful provider response', async ({ page }) =>
   )
   await page.goto('/')
   await expect(page.locator('quote-component')).toContainText('A successful quote')
+})
+
+test('pure Markdown alerts preserve localized content and theme-aware styling', async ({
+  page
+}) => {
+  await page.goto('/blog/tspi')
+  const danger = page.getByRole('note', { name: 'Caution', exact: true })
+  await expect(danger).toBeVisible()
+  await expect(danger).toContainText('MASKROM')
+  await expect(page.locator('.markdown-alert-warning').first()).toContainText('注意')
+  expect(
+    await danger.evaluate((el) => parseFloat(getComputedStyle(el).borderInlineStartWidth))
+  ).toBeGreaterThan(0)
+  const lightColor = await danger.evaluate((el) => getComputedStyle(el).borderInlineStartColor)
+  await page.locator('.theme-toggle').click()
+  await expect(page.locator('html')).toHaveClass(/dark/)
+  expect(await danger.evaluate((el) => getComputedStyle(el).borderInlineStartColor)).not.toBe(
+    lightColor
+  )
+})
+
+test('tables scroll on small screens and Solarized highlighting follows the theme', async ({
+  page
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.goto('/notes/rust/' + encodeURIComponent('rust语法'))
+  const table = page.locator('.prose table').first()
+  await table.scrollIntoViewIfNeeded()
+  expect(await table.evaluate((el) => getComputedStyle(el).overflowX)).toBe('auto')
+  expect(await table.evaluate((el) => el.getBoundingClientRect().right <= innerWidth)).toBe(true)
+  const token = page.locator('.astro-code code span[style*="--shiki-dark"]').first()
+  const lightColor = await token.evaluate((el) => getComputedStyle(el).color)
+  await page.locator('.theme-toggle').click()
+  await expect.poll(() => token.evaluate((el) => getComputedStyle(el).color)).not.toBe(lightColor)
 })

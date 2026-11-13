@@ -1,6 +1,5 @@
 import type { RemarkPlugins } from 'astro'
 import { rehypeHeadingIds, unified } from '@astrojs/markdown-remark'
-import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import UnoCSS from '@unocss/astro'
 import { defineConfig, fontProviders, svgoOptimizer } from 'astro/config'
@@ -14,6 +13,7 @@ import rehypeAutolinkHeadings from './src/plugins/rehype-auto-link-headings.ts'
 import rehypeExternalLinks from './src/plugins/rehype-external-links.ts'
 import rehypeImageCaption from './src/plugins/rehype-image-caption.ts'
 import rehypeMermaid from './src/plugins/rehype-mermaid.ts'
+import remarkAlerts from './src/plugins/remark-alerts.ts'
 import { remarkAddZoomable, remarkReadingTime } from './src/plugins/remark-plugins.ts'
 // Shiki
 import {
@@ -71,10 +71,11 @@ export default defineConfig({
       type: 'shiki',
       excludeLangs: ['math', 'mermaid']
     },
-    // Keep the existing Remark/Rehype extensions for Markdown and MDX.
+    // Keep the existing Remark/Rehype extensions for Markdown.
     processor: unified({
       remarkPlugins: [
         remarkMath,
+        remarkAlerts,
         remarkReadingTime,
         ...(config.integ.mediumZoom.enable
           ? [[remarkAddZoomable, config.integ.mediumZoom.options] as RemarkPlugins[number]]
@@ -105,8 +106,8 @@ export default defineConfig({
     // https://docs.astro.build/en/guides/syntax-highlighting/
     shikiConfig: {
       themes: {
-        light: 'one-light',
-        dark: 'one-dark-pro'
+        light: 'solarized-light',
+        dark: 'solarized-dark'
       },
       transformers: [
         // Official transformers
@@ -124,12 +125,7 @@ export default defineConfig({
   },
 
   // [Integrations]
-  integrations: [
-    mdx({ optimize: true }),
-    sitemap(),
-    UnoCSS({ injectReset: true }),
-    searchIndex(config.integ.pagefind)
-  ],
+  integrations: [sitemap(), UnoCSS({ injectReset: true }), searchIndex(config.integ.pagefind)],
 
   // [Experimental]
   experimental: {
