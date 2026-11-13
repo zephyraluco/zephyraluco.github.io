@@ -22,6 +22,12 @@ export const updateStyle = (): ShikiTransformer => {
   return {
     name: 'shiki-transformer-update-style',
     pre(node) {
+      // Let the component stylesheet own the panel background, while retaining
+      // the original Shiki theme's exact light/dark background colors.
+      node.properties.style = String(node.properties.style ?? '').replace(
+        /background-color:([^;]+);?/,
+        '--code-background-light:$1;'
+      )
       const container = h('pre', node.children)
       node.children = [container]
       node.tagName = 'div'

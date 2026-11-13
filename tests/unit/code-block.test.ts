@@ -10,7 +10,7 @@ test('code blocks have a real language toolbar and copy the unmodified source', 
   const source = 'let highlight = true;'
   const html = await codeToHtml(source, {
     lang: 'rust',
-    themes: { light: 'solarized-light', dark: 'solarized-dark' },
+    themes: { light: 'one-light', dark: 'one-dark-pro' },
     transformers: [updateStyle(), addCodeHeader()]
   })
   expect(html).toContain('class="code-header"')
@@ -18,7 +18,8 @@ test('code blocks have a real language toolbar and copy the unmodified source', 
   expect(html).toContain(`data-code="${source}"`)
   expect(html).toContain('aria-label="Copy code"')
   expect(html.indexOf('code-header')).toBeLessThan(html.indexOf('<pre>'))
-  expect(html).toContain('--shiki-light-font-weight:bold')
+  expect(html).toContain('one-light one-dark-pro')
+  expect(html).toContain('--code-background-light:')
 })
 
 test('tables keep their native structure and alignment inside a scrollable frame', async () => {

@@ -1,0 +1,204 @@
+/* Duckquill _pre-container.scss + _code.scss geometry; astro-pure token colors.
+ * This is the sole owner of code-block layout. Do not layer old toolbar/gutter rules over it.
+ */
+div.astro-code {
+  --code-background: var(--code-background-light, hsl(var(--background)));
+  --code-fill: hsl(var(--foreground) / 0.1);
+  --code-edge: inset 0 0.0625rem 0 rgb(255 255 255 / 0.1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 1rem 0;
+  padding: 0;
+  border: none;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: var(--code-background);
+  box-shadow:
+    var(--code-edge),
+    0 0 0 0.0625rem rgb(0 0 0 / 0.03),
+    0 0.0625rem 0.1875rem 0.0625rem rgb(0 0 0 / 0.07),
+    0 0.125rem 0.375rem 0.125rem rgb(0 0 0 / 0.03);
+}
+.dark div.astro-code {
+  --code-background: var(--shiki-dark-bg, hsl(var(--muted)));
+}
+div.astro-code .code-header {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: none;
+  height: 2.5rem;
+  padding: 0.25rem;
+  border-radius: 0.75rem 0.75rem 0 0;
+  background-image: linear-gradient(
+    to right,
+    var(--code-fill) 50%,
+    hsl(var(--primary) / 0.2) 75%,
+    var(--code-fill) 100%
+  );
+  background-size: 200%;
+}
+div.astro-code .code-label {
+  margin-inline-start: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: hsl(var(--muted-foreground));
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+div.astro-code button.copy {
+  appearance: none;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: hsl(var(--muted-foreground) / 0.8);
+  line-height: 0;
+  cursor: pointer;
+  transition:
+    background-color 150ms,
+    color 150ms;
+}
+div.astro-code button.copy svg {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+div.astro-code button.copy:hover {
+  box-shadow: var(--code-edge);
+  background: var(--code-fill);
+  color: hsl(var(--muted-foreground));
+}
+div.astro-code button.copy:active {
+  transform: scale(0.95);
+}
+div.astro-code button.copy:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
+}
+div.astro-code button.copy .success,
+div.astro-code button.copy.copied .ready {
+  display: none;
+}
+div.astro-code button.copy.copied .success {
+  display: block;
+}
+div.astro-code button.copy.copied {
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.1);
+}
+div.astro-code pre {
+  margin: 0;
+  padding: 1rem;
+  border: none;
+  border-radius: 0 0 0.75rem 0.75rem;
+  box-shadow: none;
+  background: transparent;
+  overflow: auto;
+  font-family:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  font-size: 1rem;
+  line-height: normal;
+}
+div.astro-code pre code {
+  display: block;
+  width: max-content;
+  min-width: 100%;
+  min-height: 1lh;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+div.astro-code code::before,
+div.astro-code code::after {
+  content: none;
+}
+div.astro-code .line {
+  padding: 0;
+}
+div.astro-code .line:last-child:empty {
+  display: none;
+}
+div.astro-code pre span {
+  font-weight: var(--shiki-light-font-weight, normal);
+  font-style: var(--shiki-light-font-style, normal);
+  text-decoration: var(--shiki-light-text-decoration, none);
+}
+.dark div.astro-code pre span {
+  color: var(--shiki-dark, inherit) !important;
+  font-weight: var(--shiki-dark-font-weight, normal);
+  font-style: var(--shiki-dark-font-style, normal);
+  text-decoration: var(--shiki-dark-text-decoration, none);
+}
+div.astro-code :is(.highlighted, .diff) {
+  display: inline-block;
+  min-width: 100%;
+}
+div.astro-code .highlighted {
+  background: rgb(149 166 183 / 0.32) !important;
+}
+div.astro-code .diff.remove {
+  background: rgb(244 63 94 / 0.16);
+}
+div.astro-code .diff.add {
+  background: rgb(16 185 129 / 0.16);
+}
+div.astro-code .collapse-toggle {
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0.35rem;
+  border: 0;
+  border-top: 1px solid hsl(var(--border));
+  background: var(--code-fill);
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+}
+div.astro-code .collapse-toggle .desc::before {
+  content: 'Collapse';
+}
+div.astro-code .collapse-toggle svg {
+  transform: rotate(180deg);
+}
+div.astro-code.collapsed pre {
+  max-height: 15rem;
+  overflow: hidden;
+}
+div.astro-code.collapsed .collapse-toggle .desc::before {
+  content: 'Show all';
+}
+div.astro-code.collapsed .collapse-toggle svg {
+  transform: none;
+}
+div.astro-code.collapsed .collapse-fade {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 0;
+  bottom: 2rem;
+  height: 5rem;
+  background: linear-gradient(transparent, var(--code-background));
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  div.astro-code button.copy {
+    transition: none;
+  }
+}

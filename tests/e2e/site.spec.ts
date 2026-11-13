@@ -120,15 +120,17 @@ test('pure Markdown alerts preserve localized content and theme-aware styling', 
   expect(
     await danger.evaluate((el) => parseFloat(getComputedStyle(el).borderInlineStartWidth))
   ).toBeGreaterThan(0)
-  const lightColor = await danger.evaluate((el) => getComputedStyle(el).borderInlineStartColor)
+  const container = danger.locator('.markdown-alert-container')
+  await expect(container).toHaveCSS('border-inline-start-width', '8px')
+  await expect(danger).toHaveCSS('border-radius', '12px')
+  await expect(danger.locator('.markdown-alert-title svg')).toBeVisible()
+  const lightColor = await danger.evaluate((el) => getComputedStyle(el).color)
   await page.locator('.theme-toggle').click()
   await expect(page.locator('html')).toHaveClass(/dark/)
-  expect(await danger.evaluate((el) => getComputedStyle(el).borderInlineStartColor)).not.toBe(
-    lightColor
-  )
+  expect(await danger.evaluate((el) => getComputedStyle(el).color)).not.toBe(lightColor)
 })
 
-test('tables scroll on small screens and Solarized highlighting follows the theme', async ({
+test('tables scroll on small screens and astro-pure highlighting follows the theme', async ({
   page
 }) => {
   await page.setViewportSize({ width: 375, height: 812 })
@@ -154,6 +156,10 @@ test('code toolbars stay visible and tables use native full-width layout', async
   const block = page.locator('.astro-code').first()
   const toolbar = block.locator('.code-header')
   await expect(toolbar).toBeVisible()
+  await expect(toolbar).toHaveCSS('height', '40px')
+  await expect(block).toHaveCSS('border-radius', '12px')
+  await expect(block.locator('pre')).toHaveCSS('padding', '16px')
+  await expect(block).toHaveCSS('background-color', 'rgb(250, 250, 250)')
   const copy = toolbar.locator('button.copy')
   await expect(copy).toHaveCSS('opacity', '1')
   const source = await copy.getAttribute('data-code')

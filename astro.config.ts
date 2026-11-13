@@ -102,8 +102,8 @@ export default defineConfig({
     // https://docs.astro.build/en/guides/syntax-highlighting/
     shikiConfig: {
       themes: {
-        light: 'solarized-light',
-        dark: 'solarized-dark'
+        light: 'one-light',
+        dark: 'one-dark-pro'
       },
       transformers: [
         // Official transformers

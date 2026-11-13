@@ -1,6 +1,9 @@
+import { fromHtml } from 'hast-util-from-html'
 import type { Blockquote, Paragraph, Root } from 'mdast'
 import type { Plugin } from 'unified'
 import { visit } from 'unist-util-visit'
+
+import { Icons } from '../lib/icons'
 
 const labels = {
   note: 'Note',
@@ -26,12 +29,37 @@ const remarkAlerts: Plugin<[], Root> = () => (tree) => {
     if (!marker.value) first.children.shift()
     if (!first.children.length) node.children.shift()
 
+    const iconName = {
+      note: 'info',
+      tip: 'bulb',
+      important: 'info',
+      warning: 'alert',
+      caution: 'octangon'
+    } as const
+    const icon = fromHtml(
+      `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${Icons[iconName[kind]]}</svg>`,
+      { fragment: true }
+    ).children.find((child) => child.type === 'element')
     const heading: Paragraph = {
       type: 'paragraph',
-      data: { hProperties: { className: ['markdown-alert-title'] } },
+      data: {
+        hProperties: { className: ['markdown-alert-title', 'not-prose'] },
+        hChildren: [...(icon ? [icon] : []), { type: 'text', value: title }]
+      },
       children: [{ type: 'text', value: title }]
     }
-    node.children.unshift(heading)
+    const content: Blockquote = {
+      type: 'blockquote',
+      data: { hName: 'div', hProperties: { className: ['markdown-alert-content'] } },
+      children: node.children
+    }
+    node.children = [
+      {
+        type: 'blockquote',
+        data: { hName: 'div', hProperties: { className: ['markdown-alert-container'] } },
+        children: [heading, content]
+      }
+    ]
     node.data = {
       ...node.data,
       hName: 'aside',

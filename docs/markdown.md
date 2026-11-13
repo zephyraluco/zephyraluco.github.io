@@ -6,7 +6,7 @@
 bun run new:post --draft --folder --lang zh "文章标题"
 ```
 
-仅表格、GitHub Alerts、公式、代码块、图表和代码高亮参考 Duckquill。标题、正文、链接、列表、普通引用、图片及其他样式保持原样。代码高亮采用 Duckquill 默认的 Solarized Light / Dark 配色，其余容器沿用站点主题变量。样式集中在 `src/assets/styles/markdown.css`，Markdown 提示框由 `src/plugins/remark-alerts.ts` 转换，网站和 RSS 共用。
+表格、公式、代码块和图表参考 Duckquill；标准 GitHub Alerts 恢复 astro-pure Aside 的圆角边框、8px 强调边、原配色和图标。标题、正文、链接、列表、普通引用、图片及其他样式保持原样。代码高亮保留 astro-pure 原来的 One Light / One Dark Pro 配色，其余容器沿用站点主题变量。代码块样式独立维护在 `src/assets/styles/code-block.css`，其他限定样式集中在 `src/assets/styles/markdown.css`，Markdown 提示框由 `src/plugins/remark-alerts.ts` 转换，网站和 RSS 共用。
 
 ## 提示框
 
@@ -40,7 +40,7 @@ bun run new:post --draft --folder --lang zh "文章标题"
 > 这项操作可能导致数据丢失。
 ```
 
-原有 `Aside type="danger"` 迁移为 `CAUTION`，`type="caution"` 迁移为 `WARNING`，`type="note"` 迁移为 `NOTE`，保留中文标题和正文。
+GitHub Alerts 只改变编写语法，不再需要 MDX。原有 `Aside type="danger"` 迁移为 `CAUTION`，`type="caution"` 迁移为 `WARNING`，`type="note"` 迁移为 `NOTE`，保留中文标题和正文。
 
 ## 基础内容
 
@@ -87,3 +87,5 @@ bun run test:e2e
 ```
 
 生产预览会生成并加载 Pagefind 搜索索引；开发模式保留搜索提示。浏览器测试不提交真实评论。
+
+构建默认使用 `astro build --force` 清除内容层缓存，确保 Markdown 插件修改后生成最新 HTML，避免本地重复编译仍显示旧提示框或旧代码结构。
