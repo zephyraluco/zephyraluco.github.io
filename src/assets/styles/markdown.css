@@ -42,6 +42,11 @@
   margin-bottom: 0;
 }
 
+/* Inline code breaks long tokens so it can never widen the article. */
+.prose :not(pre) > code {
+  overflow-wrap: anywhere;
+}
+
 /* Duckquill's table is a real full-width table, not a display:block scroll area. */
 .prose .markdown-table {
   margin: 1rem 0;
