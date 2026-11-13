@@ -1,6 +1,6 @@
 ---
-import type { IconsType } from 'astro-pure/types'
-import { Icon } from 'astro-pure/user'
+import type { IconsType } from '../../types/site'
+import Icon from '../ui/Icon.astro'
 
 interface SubstatsItem {
   platform: string
@@ -37,37 +37,38 @@ await Promise.all(stats.map(fetchCount))
 ---
 
 <div class='grid grid-cols-1 gap-3 rounded-xl border p-2 sm:grid-cols-2 sm:p-3'>
-  {
-    stats.map(({ link, platform, icon, color, count, text }) => (
-      <a
-        class='group text-muted-foreground no-underline'
-        href={link}
-        target='_blank'
-        rel='noopener noreferrer'
-      >
-        <div class='flex items-center gap-3 rounded-lg border border-transparent px-3 py-2 transition-all hover:border-border hover:bg-muted'>
-          {icon && <Icon name={icon} color={color} />}
-          <div class='flex-1 text-foreground transition-colors group-hover:text-primary'>
-            {platform}
-          </div>
-          {count ? (
-            <div class='flex items-center gap-1.5'>
-              <samp>{count}</samp>
-              <span class='text-sm font-normal'>{text}</span>
-            </div>
-          ) : (
-            'null'
-          )}
+  {stats.map(({ link, platform, icon, color, count, text }) => (
+    <a
+      class='group text-muted-foreground no-underline'
+      href={link}
+      target='_blank'
+      rel='noopener noreferrer'
+    >
+      <div class='flex items-center gap-3 rounded-lg border border-transparent px-3 py-2 transition-all hover:border-border hover:bg-muted'>
+        {icon && <Icon name={icon} color={color} />}
+        <div class='flex-1 text-foreground transition-colors group-hover:text-primary'>
+          {platform}
         </div>
-      </a>
-    ))
-  }
+        {count ? (
+          <div class='flex items-center gap-1.5'>
+            <samp>{count}</samp>
+            <span class='text-sm font-normal'>{text}</span>
+          </div>
+        ) : (
+          'null'
+        )}
+      </div>
+    </a>
+  ))}
 </div>
 <div class='mt-2 text-right text-sm'>
-  Display real-time; powered by <a
+  Display real-time; powered by{' '}
+  <a
     class='text-muted-foreground'
     href='http://github.com/spencerwooo/substats'
     target='_blank'
-    rel='noopener noreferrer'>Substats</a
+    rel='noopener noreferrer'
   >
+    Substats
+  </a>
 </div>

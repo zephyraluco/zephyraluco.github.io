@@ -1,99 +1,43 @@
-# Astro Theme Pure
+# Zeal' Lab
 
-English | [简体中文](./README-zh-CN.md)
+A personal blog and notes site built with Astro 6, MDX, UnoCSS and Pagefind. UI components, content utilities and build configuration live in this repository; the site does not depend on `astro-pure` at runtime or build time.
 
-A simple, fast and powerful blog & document theme built by Astro.
+[中文说明](README-zh-CN.md) · [Architecture and extension guide](docs/architecture.md)
 
-[![GitHub deployments](https://img.shields.io/github/deployments/cworld1/astro-theme-pure/production?style=flat&logo=vercel&label=vercel)](https://astro-pure.js.org/)
-[![NPM Version](https://img.shields.io/npm/v/astro-pure?logo=npm&style=flat)](https://www.npmjs.com/package/astro-pure)
-[![GitHub Release](https://img.shields.io/github/v/release/cworld1/astro-theme-pure?include_prereleases&style=flat&label=template)](https://github.com/cworld1/astro-theme-pure/releases)
-[![GitHub License](https://img.shields.io/github/license/cworld1/astro-theme-pure?style=flat)](https://github.com/cworld1/astro-theme-pure/blob/main/LICENSE)
+## Development
 
-![image](./.github/assets/header.webp)
-![image](./.github/assets/body.webp)
+Use Node.js 24 and Bun 1.3.14.
 
-> [!NOTE]
-> Known issues: 1. Header & customize options is still under development (template exposed still). 2. Theme template v4.0.5^ UnoCSS preset changed to PresetMini. If there's any problem, please report as issue.
-
-## Introduction
-
-Checkout [Demo Site →](https://astro-pure.js.org/)
-
-### :fire: Features
-
-- [x] :rocket: Fast & high performance
-- [x] :star: Simple & clean design
-- [x] :iphone: Responsive design
-- [x] :mag: Full-site search built with [pagefind](https://pagefind.app/)
-- [x] :world_map: Sitemap & RSS feed
-- [x] :spider_web: SEO-friendly
-- [x] :book: TOC (table of contents)
-- [x] :framed_picture: Dynamic open graph generation for posts
-- [x] :framed_picture: Mediumzoom lightbox for images
-
-### :package: Components
-
-Theme includes a lot of components, which can not only be used in the theme, but also in other astro projects.
-
-> For other astro projects, UnoCSS is required. See [Package README](https://github.com/cworld1/astro-theme-pure/blob/main/packages/pure/README.md#use-with-common-astro-project) for more details.
-
-- Basic components: `Aside`, `Tabs`, `Timeline`, `Steps`, `Spoiler`...
-- Advanced components: `GithubCard`, `LinkPreview`, `Quote`, `QRCode`...
-
-### :white_check_mark: Lighthouse score
-
-[![lighthouse-score](./.github/assets/lighthouse-score.png)](https://pagespeed.web.dev/analysis/https-cworld-top/o229zrt5o4?form_factor=mobile&hl=en)
-
-## Documentation
-
-[Docs](https://astro-pure.js.org/docs) | [Showcase](https://github.com/cworld1/astro-theme-pure/issues/10)
-
-## Package
-
-See [astro-theme-pure](https://www.npmjs.com/package/astro-pure) on npm.
-
-## Local development
-
-Environment requirements:
-
-- [Nodejs](https://nodejs.org/): 18.0.0+
-
-Clone the repository:
-
-```shell
-git clone https://github.com/cworld1/astro-theme-pure.git
-cd astro-theme-pure
-```
-
-Useful commands:
-
-```shell
-# Install dependencies
-bun install
-# Start the dev server
-bun dev
-# Build the project
+```sh
+bun install --frozen-lockfile
+bun run dev
+bun run new:post --draft --mdx --folder --lang zh "Post title"
+bun run test
 bun run build
-# Preview (after the build)
-bun preview
-# Create a new post
-bun pure new
+bun run preview
 ```
 
-## Contributions
+`bun run build` checks Astro/TypeScript, builds the static site and generates the search index. Search is available in the production preview; development mode displays an explanatory message.
 
-To spend more time coding and less time fiddling with whitespace, this project uses code conventions and styles to encourage consistency. Code with a consistent style is easier (and less error-prone!) to review, maintain, and understand.
+```sh
+bunx playwright install --with-deps chromium
+bun run test:e2e
+```
 
-## Thanks
+Browser tests use the existing `dist/` output and start their own preview server. Run the build first. They block external browser requests and do not submit to the live comment service. To use an existing Chromium installation, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
 
-- [Astro Cactus](https://github.com/chrismwilliams/astro-theme-cactus)
-- [Astro Resume](https://github.com/srleom/astro-theme-resume)
-- [Starlight](https://github.com/withastro/starlight)
+In the managed cloud environment, also set `ASTRO_TELEMETRY_DISABLED=1` and `NODE_USE_ENV_PROXY=1` before Astro commands, and add `/workspace/.cloud-tools/node_modules/.bin` to `PATH` if needed. Keep inherited proxy and certificate settings.
 
-Other third party references are on [Docs#Contributions](https://astro-pure.js.org/docs/advanced/thanks). Appreciate for all open source libraries.
+## Configuration
 
-## License
+- Site metadata, menus and feature settings: `src/site.config.ts`.
+- Validated defaults and schemas: `src/config/`.
+- Content collections: `src/content.config.ts`.
+- Markdown processing, assets and integrations: `astro.config.ts`.
+- Colors and typography: `src/assets/styles/app.css` and `uno.config.ts`.
 
-This project is licensed under the Apache 2.0 License.
+GitHub Actions validates changes and deploys `main` to GitHub Pages. The static site's canonical URL is configured in `astro.config.ts`.
 
-[![Star History Chart](https://api.star-history.com/svg?repos=cworld1/astro-theme-pure&type=Date)](https://star-history.com/#cworld1/astro-theme-pure&Date)
+## Attribution
+
+The original design and migrated components derive from [Astro Theme Pure](https://github.com/cworld1/astro-theme-pure), with local changes. See [third-party notices](THIRD_PARTY_NOTICES.md) and [upstream license](LICENSE-astro-pure).

@@ -1,0 +1,38 @@
+---
+import config from '../../config/index'
+
+interface Props {
+  selector?: string
+  background?: string
+}
+const { selector = config.integ.mediumZoom.selector, background = 'hsl(var(--background) / 0.8)' } =
+  Astro.props
+---
+
+<image-lightbox hidden data-selector={selector} data-background={background}></image-lightbox>
+
+<script>
+  import mediumZoom, { type Zoom } from 'medium-zoom'
+
+  class ImageLightbox extends HTMLElement {
+    private zoom?: Zoom
+
+    connectedCallback() {
+      this.zoom = mediumZoom(this.dataset.selector ?? '.prose .zoomable', {
+        background: this.dataset.background
+      })
+    }
+
+    disconnectedCallback() {
+      this.zoom?.detach()
+    }
+  }
+  if (!customElements.get('image-lightbox')) customElements.define('image-lightbox', ImageLightbox)
+</script>
+
+<style is:global>
+  .medium-zoom-overlay,
+  .medium-zoom-image--opened {
+    z-index: 999;
+  }
+</style>

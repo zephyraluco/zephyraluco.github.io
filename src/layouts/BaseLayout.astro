@@ -1,10 +1,11 @@
 ---
-import { Footer, ThemeProvider } from 'astro-pure/components/basic'
-import type { SiteMeta } from 'astro-pure/types'
 import BaseHead from '@/components/BaseHead.astro'
 import Header from '@/components/Header.astro'
 import config from '@/site-config'
 
+import Footer from '../components/site/Footer.astro'
+import ThemeProvider from '../components/site/ThemeProvider.astro'
+import type { SiteMeta } from '../types/site'
 // Import the global.css file here so that it is included on
 // all pages through the use of the <BaseLayout /> component.
 import '@/assets/styles/global.css'

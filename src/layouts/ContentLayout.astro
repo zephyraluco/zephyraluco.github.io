@@ -1,10 +1,12 @@
 ---
-import { BackToTop } from 'astro-pure/components/pages'
-import type { SiteMeta } from 'astro-pure/types'
-import { Button, Icon } from 'astro-pure/user'
-import { cn } from 'astro-pure/utils'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import { integ } from '@/site-config'
+
+import BackToTop from '../components/content/BackToTop.astro'
+import Button from '../components/ui/Button.astro'
+import Icon from '../components/ui/Icon.astro'
+import { cn } from '../lib/class-merge'
+import type { SiteMeta } from '../types/site'
 
 interface Props {
   meta: SiteMeta
@@ -30,8 +32,7 @@ const { meta, highlightColor, back = '/', ...props } = Astro.props
       id='sidebar-shade'
       class='fixed top-0 start-0 w-full h-full'
       style='display:none;background-color:#00000091;z-index:31'
-    >
-    </div>
+    ></div>
 
     <article class='min-w-0 grow'>
       {/* Content header */}

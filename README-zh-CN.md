@@ -1,99 +1,45 @@
-# Astro Theme Pure
+# Zeal' Lab
 
-[English](./README.md) | 简体中文
+基于 Astro 6、MDX、UnoCSS 和 Pagefind 的个人博客与笔记站点。组件、内容处理工具和构建集成均由当前项目维护，不再依赖 `astro-pure` 包。
 
-一个由 Astro 构建的，轻便简洁、快速强大的博客 & 文档主题。
-
-[![GitHub deployments](https://img.shields.io/github/deployments/cworld1/astro-theme-pure/production?style=flat&logo=vercel&label=vercel)](https://astro-pure.js.org/)
-[![NPM Version](https://img.shields.io/npm/v/astro-pure?logo=npm&style=flat)](https://www.npmjs.com/package/astro-pure)
-[![GitHub Release](https://img.shields.io/github/v/release/cworld1/astro-theme-pure?include_prereleases&style=flat&label=template)](https://github.com/cworld1/astro-theme-pure/releases)
-[![GitHub License](https://img.shields.io/github/license/cworld1/astro-theme-pure?style=flat)](https://github.com/cworld1/astro-theme-pure/blob/main/LICENSE)
-
-![image](./.github/assets/header.webp)
-![image](./.github/assets/body.webp)
-
-> [!NOTE]
-> 已知问题：1. Head 标签和自定义选项仍在开发中（已经暴露模板直接改）；2. 主题模板 v4.0.5^ CSS 预设被换到 PresetMini。如有任何问题，请及时反馈。
-
-## 简介
-
-查看 [预览 →](https://astro-pure.js.org/)
-
-### :fire: 特性
-
-- [x] :rocket: 快速高性能
-- [x] :star: 简单干净的设计
-- [x] :iphone: 响应式设计
-- [x] :mag: 使用 [pagefind](https://pagefind.app/) 构建的全站搜索
-- [x] :world_map: 站点地图和 RSS 订阅
-- [x] :spider_web: 友好的 SEO
-- [x] :book: 目录（table of contents）
-- [x] :framed_picture: 动态为文章生成可供三方媒体预览的分享图像
-- [x] :framed_picture: Mediumzoom 图像灯箱
-
-### :package: 组件
-
-主题包含了许多组件，不仅可以在主题中使用，还可以在其他 Astro 项目中使用。
-
-> 其他 Astro 项目使用需要 UnoCSS。更多详情请查阅 [Package README](https://github.com/cworld1/astro-theme-pure/blob/main/packages/pure/README.md#use-with-common-astro-project)。
-
-- 基础组件：`Aside`、`Tabs`、`Timeline`、`Steps`、`Spoiler`...
-- 高级组件：`GithubCard`、`LinkPreview`、`Quote`、`QRCode`...
-
-## :white_check_mark: Lighthouse 分数
-
-[![lighthouse-score](./.github/assets/lighthouse-score.png)](https://pagespeed.web.dev/analysis/https-cworld-top/o229zrt5o4?form_factor=mobile&hl=en)
-
-## 文档
-
-[文档](https://astro-pure.js.org/docs) | [展示台](https://github.com/cworld1/astro-theme-pure/issues/10)
-
-## NPM 包
-
-在 NPM 上查看：[astro-theme-pure](https://www.npmjs.com/package/astro-pure)
+[English](README.md) · [架构与扩展指南](docs/architecture.md)
 
 ## 本地开发
 
-环境要求：
+环境：Node.js 24、Bun 1.3.14。
 
-- [Nodejs](https://nodejs.org/): 18.0.0+
-
-克隆存储库：
-
-```shell
-git clone https://github.com/cworld1/astro-theme-pure.git
-cd astro-theme-pure
-```
-
-有用的命令：
-
-```shell
-# Install dependencies
-bun install
-# Start the dev server
-bun dev
-# Build the project
+```sh
+bun install --frozen-lockfile
+bun run dev
+bun run new:post --draft --mdx --folder --lang zh "文章标题"
+bun run test
 bun run build
-# Preview (after the build)
-bun preview
-# Create a new post
-bun pure new
+bun run preview
 ```
 
-## 贡献
+`new:post` 支持 `--draft`、`--mdx`、`--folder`、`--lang`，不会覆盖已有文章。`build` 包含类型检查、静态构建和搜索索引生成。搜索需要构建后使用 `preview` 验证，开发模式会显示提示。
 
-为了花更多时间编写代码，减少在空白上纠结的时间，本项目使用代码约定和样式来鼓励一致性。风格一致的代码更容易（且更不容易出错）进行审查、维护和理解。
+浏览器回归测试：
 
-## 鸣谢
+```sh
+bunx playwright install --with-deps chromium
+bun run test:e2e
+```
 
-- [Astro Cactus](https://github.com/chrismwilliams/astro-theme-cactus)
-- [Astro Resume](https://github.com/srleom/astro-theme-resume)
-- [Starlight](https://github.com/withastro/starlight)
+测试使用已有 `dist/` 并自动启动预览服务，因此需先构建。浏览器测试阻断外部请求，不会向真实评论服务提交内容。已有 Chromium 时，可设置 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`。
 
-其他第三方参考资料在 [Docs#Contributions](https://astro-pure.js.org/docs/advanced/thanks) 上。感谢所有开源库。
+托管云环境运行 Astro 前需设置 `ASTRO_TELEMETRY_DISABLED=1`、`NODE_USE_ENV_PROXY=1`；必要时将 `/workspace/.cloud-tools/node_modules/.bin` 加入 `PATH`，保留平台注入的代理和证书设置。
 
-## 许可证
+## 配置入口
 
-本项目基于 Apache 2.0 许可证。
+- 元数据、菜单与功能开关：`src/site.config.ts`。
+- 配置校验、默认值和浏览器公开配置：`src/config/`。
+- 博客与笔记的内容模型：`src/content.config.ts`。
+- Markdown 插件、图片、字体与构建集成：`astro.config.ts`。
+- 主题变量与排版：`src/assets/styles/app.css`、`uno.config.ts`。
 
-[![Star History Chart](https://api.star-history.com/svg?repos=cworld1/astro-theme-pure&type=Date)](https://star-history.com/#cworld1/astro-theme-pure&Date)
+GitHub Actions 执行质量检查，并在 `main` 更新时部署到 GitHub Pages。域名配置位于 `astro.config.ts`。
+
+## 来源与授权
+
+初始设计及迁移组件来自 [Astro Theme Pure](https://github.com/cworld1/astro-theme-pure)，已在本地修改维护。详见 [第三方声明](THIRD_PARTY_NOTICES.md) 和 [上游许可证](LICENSE-astro-pure)。

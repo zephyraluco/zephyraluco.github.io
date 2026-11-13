@@ -40,3 +40,7 @@ bunfig.toml
 /src/content/blog/test.*
 /test/
 .vscode/
+
+# Browser test outputs
+/test-results/
+/playwright-report/

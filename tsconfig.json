@@ -18,13 +18,20 @@
       "@/public/*": ["./public/*"],
       "@/components/*": ["./src/components/*"],
       "@/layouts/*": ["./src/layouts/*"],
-      "@/utils": ["./src/utils/index.ts"],
-      "@/utils/*": ["./src/utils/*"],
       "@/plugins/*": ["./src/plugins/*"],
       "@/pages/*": ["./src/pages/*"],
-      "@/types": ["./src/types/index.ts"],
-      "@/site-config": ["./src/site.config.ts"]
+      "@/types": ["./src/types/site.ts"],
+      "@/site-config": ["./src/config/index.ts"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/config/*": ["./src/config/*"]
     }
   },
-  "exclude": ["./node_modules", "./**/node_modules/*", "./.vscode", "./dist", "./public/scripts/*", "./test/*"]
+  "exclude": [
+    "./node_modules",
+    "./**/node_modules/*",
+    "./.vscode",
+    "./dist",
+    "./public/scripts/*",
+    "./test/*"
+  ]
 }

@@ -9,7 +9,7 @@ tags:
 language: '中文'
 ---
 
-import { Aside } from 'astro-pure/user'
+import Aside from '../../../components/ui/Aside.astro'
 
 ## 前言
 
@@ -94,6 +94,7 @@ MASKROM模式下烧录可能会出现下载失败的情况，这个时候就需�
 ## 系统配置
 
 1. 删除`/etc/profile`中的PATH设置：
+
 ```shell
 if [ "$(id -u)" -eq 0 ]; then
   PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -104,6 +105,7 @@ export PATH
 ```
 
 2. 修改`/usr/share/vim/vim91/defaults.vim`，禁用vim的鼠标模式 ：
+
 ```shell
 "if has('mouse')
 "  if &term =~ 'xterm'
@@ -115,6 +117,7 @@ export PATH
 ```
 
 3. 先安装`xauth`，然后修改`/etc/ssh/sshd_config`，启用X11转发：
+
 ```shell
 X11Forwarding yes
 X11DisplayOffset 10
@@ -122,6 +125,7 @@ X11UseLocalhost yes
 ```
 
 4. 常用软件安装：
+
 ```shell
 sudo apt install -y vim btop fd-find net-tools systemd-coredump
 ```

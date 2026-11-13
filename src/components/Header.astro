@@ -1,6 +1,7 @@
 ---
-import { Icon } from 'astro-pure/user'
 import config from '@/site-config'
+
+import Icon from './ui/Icon.astro'
 
 const menuItems = config.header.menu ?? []
 const pathname = Astro.url.pathname.replace(/\/$/, '') || '/'
@@ -88,7 +89,7 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
 </site-header>
 
 <script>
-  import { setTheme } from 'astro-pure/utils'
+  import { setTheme } from '../lib/theme'
 
   class SiteHeader extends HTMLElement {
     private controller?: AbortController

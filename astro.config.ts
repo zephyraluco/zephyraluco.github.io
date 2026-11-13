@@ -1,13 +1,20 @@
+import type { RemarkPlugins } from 'astro'
 import { rehypeHeadingIds } from '@astrojs/markdown-remark'
-// import vercel from '@astrojs/vercel'
-import AstroPureIntegration from 'astro-pure'
+import mdx from '@astrojs/mdx'
+import sitemap from '@astrojs/sitemap'
+import UnoCSS from '@unocss/astro'
 import { defineConfig, fontProviders, svgoOptimizer } from 'astro/config'
 import rehypeKatex from 'rehype-katex'
 import remarkMath from 'remark-math'
 
+import config from './src/config/index.ts'
+import searchIndex from './src/integrations/search.ts'
 // Local integrations
 import rehypeAutolinkHeadings from './src/plugins/rehype-auto-link-headings.ts'
+import rehypeExternalLinks from './src/plugins/rehype-external-links.ts'
+import rehypeImageCaption from './src/plugins/rehype-image-caption.ts'
 import rehypeMermaid from './src/plugins/rehype-mermaid.ts'
+import { remarkAddZoomable, remarkReadingTime } from './src/plugins/remark-plugins.ts'
 // Shiki
 import {
   addCollapse,
@@ -21,28 +28,21 @@ import {
   transformerNotationHighlight,
   transformerRemoveNotationEscape
 } from './src/plugins/shiki-official/transformers.ts'
-import config from './src/site.config.ts'
 
 // https://astro.build/config
 export default defineConfig({
   // [Basic]
   site: 'https://zephyraluco.github.io',
   // Deploy to a sub path
-  // https://astro-pure.js.org/docs/setup/deployment#platform-with-base-path
-  // base: '/astro-pure/',
+  // base: '/blog/',
   trailingSlash: 'never',
   // root: './my-project-directory',
   server: { host: true },
-  vite: {
-    optimizeDeps: {
-      // Theme utilities import virtual:config, which is resolved by the Astro integration.
-      exclude: ['astro-pure/utils']
-    }
-  },
+  scopedStyleStrategy: 'where',
+  prefetch: { prefetchAll: true },
 
   // [Adapter]
   // https://docs.astro.build/en/guides/deploy/
-  // adapter: vercel(),
   output: 'static',
   // Local (standalone)
   // adapter: node({ mode: 'standalone' }),
@@ -69,9 +69,23 @@ export default defineConfig({
       type: 'shiki',
       excludeLangs: ['math', 'mermaid']
     },
-    remarkPlugins: [remarkMath],
+    remarkPlugins: [
+      remarkMath,
+      remarkReadingTime,
+      ...(config.integ.mediumZoom.enable
+        ? [[remarkAddZoomable, config.integ.mediumZoom.options] as RemarkPlugins[number]]
+        : [])
+    ],
     rehypePlugins: [
       [rehypeKatex, {}],
+      [
+        rehypeExternalLinks,
+        {
+          content: { type: 'text', value: config.content.externalLinks.content },
+          contentProperties: config.content.externalLinks.properties
+        }
+      ],
+      ...(config.content.imageCaption ? [rehypeImageCaption] : []),
       rehypeMermaid,
       rehypeHeadingIds,
       [
@@ -116,10 +130,10 @@ export default defineConfig({
 
   // [Integrations]
   integrations: [
-    // astro-pure will automatically add sitemap, mdx & unocss
-    // sitemap(),
-    // mdx(),
-    AstroPureIntegration(config)
+    mdx({ optimize: true }),
+    sitemap(),
+    UnoCSS({ injectReset: true }),
+    searchIndex(config.integ.pagefind)
   ],
 
   // [Experimental]

@@ -1,0 +1,20 @@
+---
+import type { HTMLAttributes } from 'astro/types'
+
+import { cn } from '../../lib/class-merge'
+import { getFormattedDate } from '../../lib/date'
+
+type Props = HTMLAttributes<'time'> & {
+  date: Date
+  dateTimeOptions?: Intl.DateTimeFormatOptions
+  class?: string
+}
+
+const { date, dateTimeOptions, class: className, ...attrs } = Astro.props
+
+const postDate = getFormattedDate(date, dateTimeOptions)
+---
+
+<span class={cn('text-muted-foreground font-mono', className)} {...attrs}>
+  <time datetime={date.toISOString()}>{postDate}</time>
+</span>

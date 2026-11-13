@@ -1,20 +1,23 @@
 ---
 import { type CollectionEntry } from 'astro:content'
 
-import { getBlogCollection } from 'astro-pure/server'
-import { cn } from 'astro-pure/utils'
+import { cn } from '../../lib/class-merge'
+import { getBlogCollection } from '../../lib/content'
 
 export const prerender = true
 export const partial = true
 
 const notesCollection = (await getBlogCollection('notes')) as CollectionEntry<'notes'>[]
 // Group notes by id first part (setup, integrations, advanced, etc.)
-const notesByCate = notesCollection.reduce((acc: { [key: string]: typeof notesCollection }, note) => {
-  const id = note.id.split('/')[0]
-  if (!acc[id]) acc[id] = [] as typeof notesCollection
-  acc[id].push(note)
-  return acc
-}, {})
+const notesByCate = notesCollection.reduce(
+  (acc: { [key: string]: typeof notesCollection }, note) => {
+    const id = note.id.split('/')[0]
+    if (!acc[id]) acc[id] = [] as typeof notesCollection
+    acc[id].push(note)
+    return acc
+  },
+  {}
+)
 
 const noteCategories = {
   cpp: 'C++',
@@ -35,24 +38,22 @@ const { title = true, class: className, ...props } = Astro.props
 <notes-toc class={cn('not-prose', className)} {...props}>
   {title && <h2 class='text-foreground font-medium'>NOTES</h2>}
   <ul class='mt-4 flex flex-col gap-y-5'>
-    {
-      Object.entries(noteCategories).map(([id, title]: [string, string]) => (
-        <li>
-          <h3 class='text-muted-foreground text-xs tracking-widest uppercase'>{title}</h3>
-          <ul class='mt-2 flex flex-col'>
-            {notesByCate[id]
-              .sort((a, b) => a.data.order - b.data.order)
-              .map((note) => (
-                <li class='notes-item flex relative ms-2 px-3 py-1 text-foreground/75 transition-all rounded-2xl'>
-                  <a class='flex-1 hover:text-foreground' href={`/notes/${note.id}`}>
-                    {note.data.title}
-                  </a>
-                </li>
-              ))}
-          </ul>
-        </li>
-      ))
-    }
+    {Object.entries(noteCategories).map(([id, title]: [string, string]) => (
+      <li>
+        <h3 class='text-muted-foreground text-xs tracking-widest uppercase'>{title}</h3>
+        <ul class='mt-2 flex flex-col'>
+          {notesByCate[id]
+            .sort((a, b) => a.data.order - b.data.order)
+            .map((note) => (
+              <li class='notes-item flex relative ms-2 px-3 py-1 text-foreground/75 transition-all rounded-2xl'>
+                <a class='flex-1 hover:text-foreground' href={`/notes/${note.id}`}>
+                  {note.data.title}
+                </a>
+              </li>
+            ))}
+        </ul>
+      </li>
+    ))}
   </ul>
 </notes-toc>
 

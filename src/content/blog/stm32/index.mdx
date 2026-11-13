@@ -4,7 +4,8 @@ description: 'STM32F103C8T6 学习记录'
 publishDate: '2026-07-26'
 updatedDate: '2026-09-06'
 ---
-import { Aside } from 'astro-pure/user'
+
+import Aside from '../../../components/ui/Aside.astro'
 
 <Aside type='note' title='信息'>
   stm32+rtthread集成项目：[stm32-nano](https://github.com/zephyraluco/stm32-nano)
@@ -13,6 +14,7 @@ import { Aside } from 'astro-pure/user'
 ## 环境搭建(MacOS)
 
 使用 Homebrew 安装依赖:
+
 ```bash
 brew install open-ocd
 brew install --cask gcc-arm-embedded
@@ -45,6 +47,7 @@ https://www.st.com/en/development-tools/st-link-v2.html
 5. [Clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd)
 
 ## RT-Thread 参考手册
+
 https://www.rt-thread.org/document/api
 
 ## 程序启动流程
@@ -67,7 +70,9 @@ flowchart TD
 ```
 
 ## 项目烧录
+
 将OpenOCD安装路径下的 share/openocd/scripts/target 中对应芯片的配置文件和 share/openocd/scripts/interface 中对应的调试器配置文件拷贝到项目中，然后执行：
+
 ```shell
 openocd -f stlink.cfg -f stm32f1x.cfg -c "program build/Debug/stm32-nano.elf verify reset exit"
 ```

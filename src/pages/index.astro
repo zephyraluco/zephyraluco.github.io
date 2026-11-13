@@ -1,19 +1,24 @@
 ---
 import { Image } from 'astro:assets'
-import { Spoiler } from 'astro-pure/user'
-import { Quote } from 'astro-pure/advanced'
-import { PostPreview } from 'astro-pure/components/pages'
-import { getBlogCollection, sortMDByDate } from 'astro-pure/server'
-import { Button, Card, Icon, Label } from 'astro-pure/user'
+
 import PageLayout from '@/layouts/BaseLayout.astro'
 import ProjectCard from '@/components/home/ProjectCard.astro'
 import Section from '@/components/home/Section.astro'
 import SkillLayout from '@/components/home/SkillLayout.astro'
 import config from '@/site-config'
 
+import PostPreview from '../components/content/PostPreview.astro'
+import Quote from '../components/content/Quote.astro'
+import Button from '../components/ui/Button.astro'
+import Card from '../components/ui/Card.astro'
+import Icon from '../components/ui/Icon.astro'
+import Label from '../components/ui/Label.astro'
+import Spoiler from '../components/ui/Spoiler.astro'
+import { getBlogCollection, sortMDByDate } from '../lib/content'
+
 const languages = ['C++', 'C#', 'Rust', 'Python', 'Shell']
 const frame = ['Qt', 'ROS', 'DDS', 'Tokio', 'Axum', 'GPUI']
-const other = ['Docker', 'Linux','SQLite', 'Systemd', 'Socket']
+const other = ['Docker', 'Linux', 'SQLite', 'Systemd', 'Socket']
 
 const MAX_POSTS = 5
 const allPosts = await getBlogCollection()
@@ -46,12 +51,7 @@ if (!images[imagePath])
           <Label title='China / Hangzhou'>
             <Icon name='location' class='size-5' slot='icon' />
           </Label>
-          <Label
-            title='GitHub'
-            as='a'
-            href='https://github.com/zephyraluco'
-            target='_blank'
-          >
+          <Label title='GitHub' as='a' href='https://github.com/zephyraluco' target='_blank'>
             <Icon name='github' class='size-5' slot='icon' />
           </Label>
         </div>
@@ -74,7 +74,9 @@ if (!images[imagePath])
     </section>
 
     <div id='content' class='animate flex flex-col gap-y-10 md:w-4/5 lg:w-5/6'>
-      <p class='text-muted-foreground' style="text-align: center;">L'essentiel est invisible pour les yeux</p>
+      <p class='text-muted-foreground' style='text-align: center;'>
+        L'essentiel est invisible pour les yeux
+      </p>
       <!-- <Section title='About'>
         <p class='text-muted-foreground'>C++ / Rust Developer</p>
         <p class='text-muted-foreground'>
@@ -82,23 +84,20 @@ if (!images[imagePath])
         </p>
         <Button title='More about me' class='w-fit self-end' href='/about' variant='ahead' />
       </Section> -->
-      {
-        allPostsByDate.length > 0 && (
-          <Section title='Posts'>
-            <ul class='flex flex-col gap-y-1.5 sm:gap-y-2'>
-              {allPostsByDate.map((p) => (
-                <li class='flex flex-col gap-x-2 sm:flex-row'>
-                  <PostPreview post={p} />
-                </li>
-              ))}
-            </ul>
-            <Button title='More posts' class='w-fit self-end' href='/blog' variant='ahead' />
-          </Section>
-        )
-      }
+      {allPostsByDate.length > 0 && (
+        <Section title='Posts'>
+          <ul class='flex flex-col gap-y-1.5 sm:gap-y-2'>
+            {allPostsByDate.map((p) => (
+              <li class='flex flex-col gap-x-2 sm:flex-row'>
+                <PostPreview post={p} />
+              </li>
+            ))}
+          </ul>
+          <Button title='More posts' class='w-fit self-end' href='/blog' variant='ahead' />
+        </Section>
+      )}
 
-      {
-        /* <Section title='Experience'>
+      {/* <Section title='Experience'>
       <Card
         heading='Lorem Ipsum'
         subheading='Sit amet consectetur'
@@ -124,8 +123,7 @@ if (!images[imagePath])
         altText='Lorem, ipsum dolor sit'
         imageClass='h-12 w-auto md:-start-16'
       />
-    </Section> */
-      }
+    </Section> */}
       <Section title='Education'>
         <Card
           as='a'
@@ -134,15 +132,13 @@ if (!images[imagePath])
           date='August 2018 - July 2022'
           href='https://www.ahjzu.edu.cn'
         >
-          {
-            /* <ul class='ms-4 list-disc text-muted-foreground'>
+          {/* <ul class='ms-4 list-disc text-muted-foreground'>
           <li>
             Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore debitis recusandae, ut
             molestiae laboriosam pariatur!
           </li>
           <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae, pariatur!</li>
-        </ul> */
-          }
+        </ul> */}
         </Card>
       </Section>
 
