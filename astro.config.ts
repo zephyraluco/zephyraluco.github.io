@@ -13,16 +13,11 @@ import rehypeAutolinkHeadings from './src/plugins/rehype-auto-link-headings.ts'
 import rehypeExternalLinks from './src/plugins/rehype-external-links.ts'
 import rehypeImageCaption from './src/plugins/rehype-image-caption.ts'
 import rehypeMermaid from './src/plugins/rehype-mermaid.ts'
+import rehypeTables from './src/plugins/rehype-tables.ts'
 import remarkAlerts from './src/plugins/remark-alerts.ts'
 import { remarkAddZoomable, remarkReadingTime } from './src/plugins/remark-plugins.ts'
 // Shiki
-import {
-  addCollapse,
-  addCopyButton,
-  addLanguage,
-  addTitle,
-  updateStyle
-} from './src/plugins/shiki-custom-transformers.ts'
+import { addCodeHeader, addCollapse, updateStyle } from './src/plugins/shiki-custom-transformers.ts'
 import {
   transformerNotationDiff,
   transformerNotationHighlight,
@@ -92,6 +87,7 @@ export default defineConfig({
         ],
         ...(config.content.imageCaption ? [rehypeImageCaption] : []),
         rehypeMermaid,
+        rehypeTables,
         rehypeHeadingIds,
         [
           rehypeAutolinkHeadings,
@@ -116,9 +112,7 @@ export default defineConfig({
         transformerRemoveNotationEscape(),
         // Custom transformers
         updateStyle(),
-        addTitle(),
-        addLanguage(),
-        addCopyButton(2000), // timeout in ms
+        addCodeHeader(2000),
         addCollapse(15) // max lines that needs to collapse
       ]
     }

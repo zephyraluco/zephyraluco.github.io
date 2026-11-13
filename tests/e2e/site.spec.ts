@@ -135,10 +135,34 @@ test('tables scroll on small screens and Solarized highlighting follows the them
   await page.goto('/notes/rust/' + encodeURIComponent('rust语法'))
   const table = page.locator('.prose table').first()
   await table.scrollIntoViewIfNeeded()
-  expect(await table.evaluate((el) => getComputedStyle(el).overflowX)).toBe('auto')
-  expect(await table.evaluate((el) => el.getBoundingClientRect().right <= innerWidth)).toBe(true)
+  expect(await table.locator('..').evaluate((el) => getComputedStyle(el).overflowX)).toBe('auto')
+  expect(
+    await table.locator('..').evaluate((el) => el.getBoundingClientRect().right <= innerWidth)
+  ).toBe(true)
   const token = page.locator('.astro-code code span[style*="--shiki-dark"]').first()
   const lightColor = await token.evaluate((el) => getComputedStyle(el).color)
   await page.locator('.theme-toggle').click()
   await expect.poll(() => token.evaluate((el) => getComputedStyle(el).color)).not.toBe(lightColor)
+})
+
+test('code toolbars stay visible and tables use native full-width layout', async ({
+  page,
+  context
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await page.goto('/notes/rust/' + encodeURIComponent('rust语法'))
+  const block = page.locator('.astro-code').first()
+  const toolbar = block.locator('.code-header')
+  await expect(toolbar).toBeVisible()
+  const copy = toolbar.locator('button.copy')
+  await expect(copy).toHaveCSS('opacity', '1')
+  const source = await copy.getAttribute('data-code')
+  await copy.click()
+  await expect(copy).toHaveAttribute('aria-label', 'Code copied')
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(source)
+  const table = page.locator('.markdown-table table').first()
+  await expect(table).toHaveCSS('display', 'table')
+  const width = await table.evaluate((el) => el.getBoundingClientRect().width)
+  const frameWidth = await table.locator('..').evaluate((el) => el.clientWidth)
+  expect(Math.abs(width - frameWidth)).toBeLessThan(2)
 })

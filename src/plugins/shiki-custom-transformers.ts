@@ -43,82 +43,68 @@ export const processMeta = (): ShikiTransformer => {
   }
 }
 
-// Add a title to the code block
-export const addTitle = (): ShikiTransformer => {
-  return {
-    name: 'shiki-transformer-add-title',
-    pre(node) {
-      const rawMeta = this.options.meta?.__raw
-      if (!rawMeta) return
-      const meta = parseMetaString(rawMeta)
-      // If meta is needed to parse in other transformers
-      // if (this.options.meta) {
-      //   Object.assign(this.options.meta, meta)
-      // }
-      if (!meta.title) return
-
-      const div = h(
-        'div',
-        {
-          class: 'title text-sm text-muted-foreground px-3 py-1 rounded-lg border'
-        },
-        meta.title.toString()
-      )
-      node.children.unshift(div)
-    }
+// Duckquill-style permanent toolbar: filename or language on the left, copy on the right.
+export const addCodeHeader = (timeout = 2000): ShikiTransformer => ({
+  name: 'shiki-transformer-code-header',
+  pre(node) {
+    const meta = parseMetaString(this.options.meta?.__raw)
+    const label = meta.title?.toString() || this.options.lang || 'text'
+    const button = h(
+      'button',
+      {
+        class: 'copy',
+        type: 'button',
+        'aria-label': 'Copy code',
+        title: 'Copy code',
+        'data-code': this.source,
+        onclick: `navigator.clipboard.writeText(this.dataset.code).then(() => {
+        this.classList.add('copied');
+        this.setAttribute('aria-label', 'Code copied');
+        setTimeout(() => {
+          this.classList.remove('copied');
+          this.setAttribute('aria-label', 'Copy code');
+        }, ${timeout});
+      }).catch(() => this.setAttribute('aria-label', 'Copy failed; select the code to copy'))`
+      },
+      [
+        h('span', { class: 'ready', 'aria-hidden': 'true' }, [
+          h(
+            'svg',
+            {
+              width: 20,
+              height: 20,
+              viewBox: '0 0 24 24',
+              fill: 'none',
+              stroke: 'currentColor',
+              strokeWidth: 2
+            },
+            [
+              h('rect', { x: 9, y: 9, width: 12, height: 12, rx: 2 }),
+              h('path', { d: 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' })
+            ]
+          )
+        ]),
+        h('span', { class: 'success', 'aria-hidden': 'true' }, [
+          h(
+            'svg',
+            {
+              width: 20,
+              height: 20,
+              viewBox: '0 0 24 24',
+              fill: 'none',
+              stroke: 'currentColor',
+              strokeWidth: 2
+            },
+            [h('path', { d: 'm5 12 4 4L19 6' })]
+          )
+        ])
+      ]
+    )
+    node.children.unshift(
+      h('div', { class: 'code-header' }, [h('span', { class: 'code-label' }, label), button])
+    )
   }
-}
-
-// Add a language tag to the code block
-export const addLanguage = (): ShikiTransformer => {
-  return {
-    name: 'shiki-transformer-add-language',
-    pre(node) {
-      const span = h(
-        'span',
-        { class: 'language ps-1 pe-3 text-sm bg-muted text-muted-foreground' },
-        this.options.lang
-      )
-      node.children.push(span)
-    }
-  }
-}
-
-// Add a copy button to the code block
-export const addCopyButton = (timeout?: number): ShikiTransformer => {
-  const toggleMs = timeout || 2000
-  return {
-    name: 'shiki-transformer-copy-button',
-    pre(node) {
-      const button = h(
-        'button',
-        {
-          class: 'copy text-muted-foreground p-1 box-content border rounded-lg bg-card',
-          'aria-label': 'Copy code',
-          'data-code': this.source,
-          onclick: `
-          navigator.clipboard.writeText(this.dataset.code);
-          this.classList.add('copied');
-          setTimeout(() => this.classList.remove('copied'), ${toggleMs})
-        `
-        },
-        [
-          h('div', { class: 'ready' }, [
-            h('svg', { class: 'size-5' }, [
-              h('use', { href: '/icons/code.svg#mingcute-clipboard-line' })
-            ])
-          ]),
-          h('div', { class: 'success hidden' }, [
-            h('svg', { class: 'size-5' }, [
-              h('use', { href: '/icons/code.svg#mingcute-file-check-line' })
-            ])
-          ])
-        ]
-      )
-      node.children.push(button)
-    }
-  }
-}
+})
 
 // Add a collapse button to the code block
 export const addCollapse = (displayLineCount?: number): ShikiTransformer => {

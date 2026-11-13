@@ -61,41 +61,135 @@
   --alert-color: #ff9da1;
 }
 
-.prose .astro-code {
-  margin-block: 1.5rem;
-  border: 1px solid hsl(var(--border));
-  border-radius: 0.85rem;
-  box-shadow: 0 5px 15px -10px hsl(var(--foreground) / 0.2);
-}
-.prose .astro-code pre {
-  font-size: 0.875rem;
-  line-height: 1.7;
-}
-.prose table {
-  display: block;
-  width: 100%;
-  overflow-x: auto;
-  margin-block: 1.5rem;
-  border: 1px solid hsl(var(--border));
+/* Duckquill's table is a real full-width table, not a display:block scroll area. */
+.prose .markdown-table {
+  margin: 1rem 0;
   border-radius: 0.75rem;
-  border-collapse: separate;
+  overflow-x: auto;
+  background: hsl(var(--foreground) / 0.035);
+  box-shadow: inset 0 1px hsl(var(--foreground) / 0.04);
+}
+.prose .markdown-table:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 3px;
+}
+.prose .markdown-table table {
+  display: table;
+  margin: 0;
+  width: 100%;
+  border: none;
+  border-collapse: collapse;
   border-spacing: 0;
-  background: hsl(var(--muted) / 0.45);
-  font-size: 0.9em;
+  background: transparent;
+  color: hsl(var(--foreground));
+  font-size: 1em;
+  line-height: 1.5;
 }
-.prose :is(th, td) {
-  padding: 0.65rem 1rem;
-  border: 0;
+.prose .markdown-table :is(tr, th, td) {
+  border: none;
 }
-.prose :is(th, td):first-child {
-  padding-inline-start: 1rem;
+.prose .markdown-table :is(th, td) {
+  padding: 0.5rem 1rem;
+  text-align: start;
+  vertical-align: middle;
 }
-.prose th {
-  background: hsl(var(--foreground) / 0.07);
+.prose .markdown-table th {
+  background: hsl(var(--foreground) / 0.12);
+  color: hsl(var(--foreground));
   font-weight: 700;
 }
-.prose tbody tr:nth-child(even) {
-  background: hsl(var(--foreground) / 0.035);
+.prose .markdown-table tbody tr:nth-child(even) {
+  background: hsl(var(--foreground) / 0.05);
+}
+
+/* Match Duckquill's separate 2.5rem header and permanently visible copy action. */
+.prose .astro-code {
+  margin: 1rem 0;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+  border-radius: 0.75rem;
+  background: hsl(var(--background)) !important;
+  box-shadow:
+    inset 0 1px hsl(var(--foreground) / 0.06),
+    0 2px 6px hsl(var(--foreground) / 0.15);
+}
+.prose .astro-code .code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 2.5rem;
+  padding: 0.25rem;
+  background: hsl(var(--foreground) / 0.06);
+}
+.prose .astro-code .code-label {
+  margin-inline-start: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: hsl(var(--muted-foreground));
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.prose .astro-code .code-header button.copy {
+  position: static;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0.5rem;
+  opacity: 1;
+  border: none;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+}
+.prose .astro-code .code-header button.copy:hover {
+  background: hsl(var(--foreground) / 0.06);
+  color: hsl(var(--foreground));
+}
+.prose .astro-code .code-header button.copy:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
+}
+.prose .astro-code .code-header button.copy .success {
+  display: none;
+}
+.prose .astro-code .code-header button.copy.copied {
+  color: hsl(var(--primary));
+}
+.prose .astro-code .code-header button.copy.copied .success {
+  display: block;
+}
+.prose .astro-code .code-header button.copy .success::before {
+  content: none;
+}
+.prose .astro-code pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  border-radius: 0;
+  background: transparent;
+  font-size: 1em;
+  line-height: normal;
+}
+/* The reference has no line-number gutter. Keep all code and copy/collapse behavior. */
+.prose .astro-code pre code::before,
+.prose .astro-code pre code .line::before {
+  display: none;
+}
+.prose .astro-code pre code .line {
+  padding-inline-end: 0;
+}
+.prose .astro-code pre code {
+  width: max-content;
+  min-width: 100%;
+  min-height: 1lh;
 }
 
 /* KaTeX keeps its mathematical typography; wide equations scroll within the article. */
@@ -131,4 +225,21 @@
   border-color: hsl(var(--primary));
   background: hsl(var(--primary));
   color: hsl(var(--background));
+}
+
+.prose .markdown-table [align='center'] {
+  text-align: center;
+}
+.prose .markdown-table [align='right'] {
+  text-align: right;
+}
+.prose .astro-code pre span {
+  font-weight: var(--shiki-light-font-weight, normal);
+  font-style: var(--shiki-light-font-style, normal);
+  text-decoration: var(--shiki-light-text-decoration, none);
+}
+.dark .prose .astro-code pre span {
+  font-weight: var(--shiki-dark-font-weight, normal);
+  font-style: var(--shiki-dark-font-style, normal);
+  text-decoration: var(--shiki-dark-text-decoration, none);
 }
