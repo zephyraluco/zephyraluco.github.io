@@ -1,0 +1,296 @@
+---
+import { Icon } from 'astro-pure/user'
+import config from '@/site-config'
+
+const menuItems = config.header.menu ?? []
+const pathname = Astro.url.pathname.replace(/\/$/, '') || '/'
+const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${link}/`)
+---
+
+<site-header>
+  <nav aria-label='Main navigation' class='navigation'>
+    <a class='brand' href='/' aria-current={pathname === '/' ? 'page' : undefined}>
+      <svg
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='currentColor'
+        stroke-width='2'
+        aria-hidden='true'
+      >
+        <path
+          d='m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1Z'
+          stroke-linejoin='round'
+        />
+      </svg>
+      <span>{config.title}</span>
+    </a>
+    <span class='divider' aria-hidden='true'></span>
+    <div class='nav-links'>
+      {menuItems.map(({ title, link }) => (
+        <a href={link} aria-current={isCurrent(link) ? 'page' : undefined} data-astro-prefetch>
+          {title}
+        </a>
+      ))}
+    </div>
+    <div class='actions'>
+      <a
+        class='icon-button'
+        href='/search'
+        aria-label='Search'
+        title='Search'
+        aria-current={pathname === '/search' ? 'page' : undefined}
+      >
+        <Icon name='search' />
+      </a>
+      <button
+        class='icon-button theme-toggle'
+        type='button'
+        aria-label='Change color theme'
+        title='Change color theme'
+      >
+        <svg viewBox='0 0 24 24' aria-hidden='true'>
+          <circle cx='12' cy='12' r='9' fill='none' stroke='currentColor' stroke-width='2' />
+          <path d='M12 3a9 9 0 0 1 0 18Z' fill='currentColor' />
+        </svg>
+      </button>
+      <a
+        class='icon-button secondary-action'
+        href='/rss.xml'
+        aria-label='RSS feed'
+        title='RSS feed'
+      >
+        <Icon name='rss' />
+      </a>
+      <a
+        class='icon-button secondary-action'
+        href='https://github.com/zephyraluco/zephyraluco.github.io'
+        aria-label='Source on GitHub'
+        title='Source on GitHub'
+      >
+        <Icon name='github' />
+      </a>
+    </div>
+    <details class='mobile-menu'>
+      <summary class='icon-button' aria-label='Navigation menu' title='Navigation menu'>
+        <Icon name='menu' />
+      </summary>
+      <div class='mobile-links'>
+        {menuItems.map(({ title, link }) => (
+          <a href={link} aria-current={isCurrent(link) ? 'page' : undefined}>
+            {title}
+          </a>
+        ))}
+        <a href='/rss.xml'>RSS feed</a>
+        <a href='https://github.com/zephyraluco/zephyraluco.github.io'>GitHub</a>
+      </div>
+    </details>
+  </nav>
+</site-header>
+
+<script>
+  import { setTheme } from 'astro-pure/utils'
+
+  class SiteHeader extends HTMLElement {
+    private controller?: AbortController
+
+    connectedCallback() {
+      this.controller = new AbortController()
+      const { signal } = this.controller
+      const themeButton = this.querySelector<HTMLButtonElement>('.theme-toggle')
+      const updateThemeLabel = () => {
+        const theme = localStorage.getItem('theme') || 'system'
+        themeButton?.setAttribute('aria-label', `Color theme: ${theme}. Change color theme`)
+        themeButton?.setAttribute('title', `Color theme: ${theme}`)
+      }
+      updateThemeLabel()
+      themeButton?.addEventListener(
+        'click',
+        () => {
+          setTheme(undefined, true)
+          updateThemeLabel()
+        },
+        { signal }
+      )
+
+      const menu = this.querySelector('details')
+      document.addEventListener(
+        'keydown',
+        (event) => {
+          if (event.key === 'Escape' && menu?.open) {
+            menu.open = false
+            menu.querySelector('summary')?.focus()
+          }
+        },
+        { signal }
+      )
+      document.addEventListener(
+        'click',
+        (event) => {
+          if (event.target instanceof Node && !this.contains(event.target) && menu)
+            menu.open = false
+        },
+        { signal }
+      )
+    }
+
+    disconnectedCallback() {
+      this.controller?.abort()
+    }
+  }
+
+  if (!customElements.get('site-header')) customElements.define('site-header', SiteHeader)
+</script>
+
+<style>
+  site-header {
+    --nav-background: hsl(var(--muted));
+    --nav-text: hsl(var(--muted-foreground));
+    --nav-accent: hsl(var(--primary));
+    --nav-hover: hsl(var(--primary) / 0.12);
+    --nav-divider: hsl(var(--border));
+    display: block;
+    position: sticky;
+    top: max(0.75rem, env(safe-area-inset-top));
+    z-index: 50;
+    margin-block: 1rem 3rem;
+  }
+  .navigation {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    width: fit-content;
+    margin-inline: auto;
+    padding: 0.35rem 0.5rem;
+    border-radius: 999px;
+    color: var(--nav-text);
+    background: var(--nav-background);
+    box-shadow: 0 12px 24px -12px hsl(var(--foreground) / 0.16);
+  }
+  .navigation a,
+  .navigation button,
+  .navigation summary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 999px;
+    color: inherit;
+    cursor: pointer;
+    transition:
+      color 160ms ease,
+      background-color 160ms ease;
+  }
+  .navigation a:hover,
+  .navigation button:hover,
+  .navigation summary:hover,
+  .navigation a[aria-current='page'],
+  .navigation summary[aria-current='page'] {
+    color: var(--nav-accent);
+    background: var(--nav-hover);
+  }
+  .navigation :is(a, button, summary):focus-visible {
+    outline: 2px solid var(--nav-accent);
+    outline-offset: 3px;
+  }
+  .brand {
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 1.05rem;
+    font-weight: 750;
+    white-space: nowrap;
+    color: var(--nav-accent);
+    background: hsl(var(--primary) / 0.18);
+  }
+  .brand svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+  .divider {
+    align-self: stretch;
+    width: 1px;
+    margin: 0.2rem 0.45rem;
+    background: var(--nav-divider);
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+  }
+  .nav-links a {
+    padding: 0.45rem 0.65rem;
+    font-size: 1rem;
+    font-weight: 650;
+  }
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+    margin-inline-start: 0.35rem;
+  }
+  .icon-button {
+    width: 2.15rem;
+    height: 2.15rem;
+    padding: 0.45rem;
+  }
+  .icon-button :global(svg) {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+  .mobile-menu {
+    display: none;
+  }
+  summary {
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  @media (max-width: 640px) {
+    .navigation .nav-links,
+    .navigation .divider,
+    .navigation .secondary-action {
+      display: none;
+    }
+    .mobile-menu {
+      display: block;
+    }
+    .mobile-links {
+      position: absolute;
+      inset-inline: 0;
+      top: calc(100% + 0.65rem);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      padding: 0.75rem;
+      border: 1px solid var(--nav-divider);
+      border-radius: 1.5rem;
+      background: var(--nav-background);
+      box-shadow: 0 12px 24px -12px hsl(var(--foreground) / 0.16);
+    }
+    .mobile-links a {
+      min-height: 2.75rem;
+      padding: 0.5rem 1rem;
+      font-weight: 650;
+    }
+  }
+  @media (max-width: 540px) {
+    .navigation {
+      gap: 0.1rem;
+      padding: 0.3rem;
+    }
+    .brand {
+      gap: 0.35rem;
+      padding: 0.35rem 0.5rem;
+      font-size: 0.95rem;
+    }
+    .icon-button {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .navigation :is(a, button, summary) {
+      transition: none;
+    }
+  }
+</style>
