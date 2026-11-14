@@ -2,7 +2,6 @@
 import PageLayout from '@/layouts/BaseLayout.astro'
 
 import Button from '../../components/ui/Button.astro'
-import { cn } from '../../lib/class-merge'
 import { getBlogCollection, getUniqueTagsWithCount } from '../../lib/content'
 
 const allPosts = await getBlogCollection()
@@ -23,19 +22,12 @@ const meta = {
 
     <div id='content' class='animate'>
       {allTags.length > 0 ? (
-        <ul class='flex flex-wrap gap-4'>
+        <ul class='flex flex-wrap gap-1'>
           {allTags.map(([tag, val]) => (
             <li>
-              <Button
-                href={`/tags/${tag}`}
-                variant='pill'
-                class={cn(
-                  'items-start gap-x-1',
-                  val > 2 ? 'rounded-xl px-3 py-1 text-xl' : val > 1 && 'text-lg'
-                )}
-              >
-                {tag}
-                <span class={val > 2 ? 'text-base' : 'text-xs'}>{val}</span>
+              <Button href={`/tags/${tag}`} variant='pill'>
+                <span class='tag-label'>{tag}</span>
+                <span class='tag-count'>{val}</span>
               </Button>
             </li>
           ))}
