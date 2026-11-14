@@ -209,8 +209,8 @@ test('navigation uses astro-pure typography and preserves icon sizes with keyboa
   const navigation = page.locator('.navigation')
   await expect(navigation).toHaveCSS('padding', '5.6px 8px')
   await expect(navigation).toHaveCSS('border-radius', '999px')
-  await expect(page.locator('.brand')).toHaveCSS('font-size', '20px')
-  await expect(page.locator('.brand')).toHaveCSS('font-weight', '500')
+  await expect(page.locator('.brand')).toHaveCSS('font-size', '16px')
+  await expect(page.locator('.brand')).toHaveCSS('font-weight', '600')
   for (const selector of ['.brand svg', '.theme-toggle svg:visible', '.actions a svg']) {
     expect(
       await page
@@ -240,7 +240,7 @@ test('theme submenu supports keyboard, dismissal and mobile layout', async ({ pa
   await page.goto('/')
   const toggle = page.locator('.theme-toggle')
   const options = page.locator('.theme-options')
-  await expect(page.locator('.brand')).toHaveCSS('font-size', '20px')
+  await expect(page.locator('.brand')).toHaveCSS('font-size', '16px')
   await toggle.focus()
   await page.keyboard.press('ArrowDown')
   await expect(page.getByRole('button', { name: 'System theme', exact: true })).toBeFocused()
