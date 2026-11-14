@@ -1,7 +1,7 @@
 /* Duckquill _pre-container.scss + _code.scss geometry; astro-pure token colors.
  * This is the sole owner of code-block layout. Do not layer old toolbar/gutter rules over it.
  */
-div.astro-code {
+:is(div.astro-code, code-tabs) {
   --code-background: var(--code-background-light, hsl(var(--background)));
   --code-fill: hsl(var(--foreground) / 0.1);
   --code-edge: inset 0 0.0625rem 0 rgb(255 255 255 / 0.1);
@@ -23,7 +23,7 @@ div.astro-code {
 .dark div.astro-code {
   --code-background: var(--shiki-dark-bg, hsl(var(--muted)));
 }
-div.astro-code .code-header {
+:is(div.astro-code, code-tabs) .code-header {
   box-sizing: border-box;
   display: flex;
   justify-content: space-between;
@@ -50,7 +50,7 @@ div.astro-code .code-label {
   font-weight: 700;
   line-height: 1;
 }
-div.astro-code button.copy {
+:is(div.astro-code, code-tabs) button.copy {
   appearance: none;
   box-sizing: border-box;
   display: flex;
@@ -70,31 +70,31 @@ div.astro-code button.copy {
     background-color 150ms,
     color 150ms;
 }
-div.astro-code button.copy svg {
+:is(div.astro-code, code-tabs) button.copy svg {
   display: block;
   width: 1rem;
   height: 1rem;
 }
-div.astro-code button.copy:hover {
+:is(div.astro-code, code-tabs) button.copy:hover {
   box-shadow: var(--code-edge);
   background: var(--code-fill);
   color: hsl(var(--muted-foreground));
 }
-div.astro-code button.copy:active {
+:is(div.astro-code, code-tabs) button.copy:active {
   transform: scale(0.95);
 }
-div.astro-code button.copy:focus-visible {
+:is(div.astro-code, code-tabs) button.copy:focus-visible {
   outline: 2px solid hsl(var(--primary));
   outline-offset: -2px;
 }
-div.astro-code button.copy .success,
-div.astro-code button.copy.copied .ready {
+:is(div.astro-code, code-tabs) button.copy .success,
+:is(div.astro-code, code-tabs) button.copy.copied .ready {
   display: none;
 }
-div.astro-code button.copy.copied .success {
+:is(div.astro-code, code-tabs) button.copy.copied .success {
   display: block;
 }
-div.astro-code button.copy.copied {
+:is(div.astro-code, code-tabs) button.copy.copied {
   color: hsl(var(--primary));
   background: hsl(var(--primary) / 0.1);
 }
@@ -197,7 +197,7 @@ div.astro-code.collapsed .collapse-fade {
   pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  div.astro-code button.copy {
+  :is(div.astro-code, code-tabs) button.copy {
     transition: none;
   }
 }
@@ -225,36 +225,51 @@ div.astro-code .line.diff.remove::before {
 div.astro-code:has(> .collapse-toggle) > pre {
   border-radius: 0;
 }
-code-tabs {
-  display: block;
-  margin: 1rem 0;
+code-tabs > .code-header {
+  gap: 0.5rem;
 }
-code-tabs > .code-tabs-list {
+code-tabs > .code-header > .code-tabs-list {
   display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
   gap: 0.25rem;
   overflow-x: auto;
-  padding: 0.25rem;
-  border-radius: 0.75rem 0.75rem 0 0;
-  background: hsl(var(--foreground) / 0.1);
 }
-code-tabs > .code-tabs-list > button {
+code-tabs .code-tabs-copies {
   flex: none;
+}
+code-tabs .code-tabs-list > button {
+  appearance: none;
+  box-sizing: border-box;
+  flex: none;
+  height: 2rem;
   padding: 0.5rem 0.75rem;
-  border: 0;
+  border: none;
   border-radius: 0.5rem;
   background: transparent;
-  color: hsl(var(--muted-foreground));
+  color: hsl(var(--muted-foreground) / 0.8);
   font: inherit;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
+  transition:
+    background-color 150ms,
+    color 150ms;
 }
-code-tabs > .code-tabs-list > button:hover {
-  background: hsl(var(--foreground) / 0.05);
+code-tabs .code-tabs-list > button:hover,
+code-tabs .code-tabs-list > button[aria-selected='true'] {
+  background: var(--code-fill);
+  box-shadow: var(--code-edge);
+  color: hsl(var(--muted-foreground));
 }
-code-tabs > .code-tabs-list > button[aria-selected='true'] {
-  color: hsl(var(--primary));
-  background: hsl(var(--primary) / 0.1);
+code-tabs .code-tabs-list > button[aria-selected='true'] {
+  font-weight: 600;
 }
-code-tabs > .code-tabs-list > button:focus-visible,
+code-tabs .code-tabs-list > button:active {
+  transform: scale(0.95);
+}
+code-tabs .code-tabs-list > button:focus-visible,
 div.astro-code .collapse-toggle:focus-visible {
   outline: 2px solid hsl(var(--primary));
   outline-offset: -2px;
@@ -263,10 +278,14 @@ code-tabs > div.astro-code {
   margin: 0;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+  box-shadow: none;
 }
-code-tabs > div.astro-code > .code-header {
-  border-radius: 0;
-}
-code-tabs > div.astro-code[hidden] {
+code-tabs > div.astro-code[hidden],
+code-tabs button.copy[hidden] {
   display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  code-tabs .code-tabs-list > button {
+    transition: none;
+  }
 }

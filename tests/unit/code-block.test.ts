@@ -86,7 +86,8 @@ test('Markdown groups only adjacent matching fences with unique panel associatio
   expect(code).toContain('role="tablist"')
   expect(code).toContain('aria-controls="code-tabs-0-panel-1"')
   expect(code).toContain('>TypeScript</button>')
-  expect(code).toContain('>hello world.ts</span>')
+  expect(code).not.toContain('hello world.ts')
+  expect(code.match(/class="code-header"/g)).toHaveLength(2)
   const separated = await processor.render(
     '```ts group="x"\nlet x = 1\n```\n\nParagraph\n\n```js group="x"\nlet x = 1\n```'
   )

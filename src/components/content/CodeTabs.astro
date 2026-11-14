@@ -6,9 +6,14 @@
       this.controller = new AbortController()
       const { signal } = this.controller
       const tabs = Array.from(
-        this.querySelectorAll<HTMLButtonElement>(':scope > .code-tabs-list > button')
+        this.querySelectorAll<HTMLButtonElement>(':scope > .code-header > .code-tabs-list > button')
       )
       const panels = Array.from(this.querySelectorAll<HTMLElement>(':scope > [role="tabpanel"]'))
+      const copies = Array.from(
+        this.querySelectorAll<HTMLButtonElement>(
+          ':scope > .code-header > .code-tabs-copies > button'
+        )
+      )
       if (!tabs.length || tabs.length !== panels.length) return
       const select = (selected: number, focus = false) => {
         const previousTop = this.getBoundingClientRect().top
@@ -16,6 +21,7 @@
           tab.setAttribute('aria-selected', String(index === selected))
           tab.tabIndex = index === selected ? 0 : -1
           panels[index].hidden = index !== selected
+          if (copies[index]) copies[index].hidden = index !== selected
         })
         if (focus) {
           tabs[selected].focus({ preventScroll: true })

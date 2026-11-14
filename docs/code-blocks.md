@@ -1,13 +1,13 @@
 # Markdown code blocks
 
-Adjacent fenced code blocks with the same `group` form a language switcher. `label` controls the tab text; `title` optionally displays a filename. Group names are local to each consecutive set of fences. A paragraph between fences starts a new example. Without JavaScript, all examples remain readable.
+Adjacent fenced code blocks with the same `group` form a language switcher. `label` controls the tab text. Grouped examples use one toolbar with language tabs on the left and the active panel’s copy button on the right; filenames are not displayed. Standalone blocks still support `title` for filenames. Group names are local to each consecutive set of fences. A paragraph between fences starts a new example. Without JavaScript, all examples remain readable.
 
 ````markdown
-```ts group="greeting" label="TypeScript" title="hello.ts"
+```ts group="greeting" label="TypeScript"
 console.log('Hello')
 ```
 
-```python group="greeting" label="Python" title="hello.py"
+```python group="greeting" label="Python"
 print('Hello')
 ```
 ````

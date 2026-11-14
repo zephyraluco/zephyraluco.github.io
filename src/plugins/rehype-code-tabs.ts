@@ -51,16 +51,35 @@ export default function rehypeCodeTabs() {
             String(panel.properties['data-code-label'])
           )
         })
+        const copies = panels.flatMap((panel, position) => {
+          const headerIndex = panel.children.findIndex(
+            (child) =>
+              child.type === 'element' &&
+              child.properties.className instanceof Array &&
+              child.properties.className.includes('code-header')
+          )
+          if (headerIndex < 0) return []
+          const header = panel.children.splice(headerIndex, 1)[0] as Element
+          const copy = header.children.find(
+            (child) => child.type === 'element' && child.tagName === 'button'
+          )
+          if (!copy || copy.type !== 'element') return []
+          copy.properties.hidden = position !== 0
+          return [copy]
+        })
         // Panels remain readable without JavaScript; enhancement hides inactive panels.
         parent.children.splice(
           index,
           end - index,
           h('code-tabs', [
-            h(
-              'div',
-              { class: 'code-tabs-list', role: 'tablist', 'aria-label': String(group) },
-              tabs
-            ),
+            h('div', { class: 'code-header' }, [
+              h(
+                'div',
+                { class: 'code-tabs-list', role: 'tablist', 'aria-label': String(group) },
+                tabs
+              ),
+              h('div', { class: 'code-tabs-copies' }, copies)
+            ]),
             ...panels
           ])
         )
