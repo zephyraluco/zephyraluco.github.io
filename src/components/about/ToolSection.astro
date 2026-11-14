@@ -5,6 +5,8 @@ import { Image } from 'astro:assets'
 import { cn } from '../../lib/class-merge'
 import Svg from '../ui/Svg.astro'
 
+import '../../assets/styles/about-link.css'
+
 interface Props {
   class?: string
   title: string
@@ -32,7 +34,7 @@ function isImageMetadata(obj: unknown): obj is ImageMetadata {
   <div class='grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-2'>
     {tools.map((tool) => (
       <a
-        class='tool-button group relative text-sm leading-normal no-underline'
+        class='about-link tool-button group relative text-sm leading-normal no-underline'
         href={tool.href}
         id={tool.name}
         target='_blank'
@@ -74,7 +76,7 @@ function isImageMetadata(obj: unknown): obj is ImageMetadata {
             </>
           )}
           <div class='z-20 flex flex-col'>
-            <div class='tool-name font-medium text-foreground'>{tool.name}</div>
+            <div class='about-link-title font-medium text-foreground'>{tool.name}</div>
             <div class='font-normal'>{tool.description}</div>
           </div>
         </div>
@@ -82,39 +84,3 @@ function isImageMetadata(obj: unknown): obj is ImageMetadata {
     ))}
   </div>
 </div>
-
-<style>
-  .tool-button {
-    border-radius: 0.75rem;
-    background: transparent;
-    color: hsl(var(--muted-foreground));
-    transition:
-      background-color 0.2s,
-      box-shadow 0.2s,
-      color 0.2s,
-      transform 0.2s;
-  }
-  .tool-button:hover {
-    background: hsl(var(--primary) / 0.1);
-    box-shadow: inset 0 0.0625rem 0 rgb(255 255 255 / 0.1);
-    color: hsl(var(--primary));
-  }
-  .tool-button:hover .tool-name {
-    color: hsl(var(--primary));
-  }
-  .tool-button:active {
-    transform: scale(0.9);
-  }
-  .tool-button:focus-visible {
-    outline: 2px solid hsl(var(--primary));
-    outline-offset: 2px;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .tool-button {
-      transition: none;
-    }
-    .tool-button:active {
-      transform: none;
-    }
-  }
-</style>
