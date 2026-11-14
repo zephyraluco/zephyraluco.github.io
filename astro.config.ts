@@ -10,6 +10,7 @@ import config from './src/config/index.ts'
 import searchIndex from './src/integrations/search.ts'
 // Local integrations
 import rehypeAutolinkHeadings from './src/plugins/rehype-auto-link-headings.ts'
+import rehypeCodeTabs from './src/plugins/rehype-code-tabs.ts'
 import rehypeExternalLinks from './src/plugins/rehype-external-links.ts'
 import rehypeImageCaption from './src/plugins/rehype-image-caption.ts'
 import rehypeMermaid from './src/plugins/rehype-mermaid.ts'
@@ -88,6 +89,7 @@ export default defineConfig({
         ...(config.content.imageCaption ? [rehypeImageCaption] : []),
         rehypeMermaid,
         rehypeTables,
+        rehypeCodeTabs,
         rehypeHeadingIds,
         [
           rehypeAutolinkHeadings,

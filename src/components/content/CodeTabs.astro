@@ -1,0 +1,54 @@
+<script>
+  class CodeTabs extends HTMLElement {
+    private controller?: AbortController
+    connectedCallback() {
+      this.controller?.abort()
+      this.controller = new AbortController()
+      const { signal } = this.controller
+      const tabs = Array.from(
+        this.querySelectorAll<HTMLButtonElement>(':scope > .code-tabs-list > button')
+      )
+      const panels = Array.from(this.querySelectorAll<HTMLElement>(':scope > [role="tabpanel"]'))
+      if (!tabs.length || tabs.length !== panels.length) return
+      const select = (selected: number, focus = false) => {
+        const previousTop = this.getBoundingClientRect().top
+        tabs.forEach((tab, index) => {
+          tab.setAttribute('aria-selected', String(index === selected))
+          tab.tabIndex = index === selected ? 0 : -1
+          panels[index].hidden = index !== selected
+        })
+        if (focus) {
+          tabs[selected].focus({ preventScroll: true })
+          window.scrollTo({
+            top: window.scrollY + this.getBoundingClientRect().top - previousTop,
+            behavior: 'instant'
+          })
+        }
+      }
+      tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => select(index, true), { signal })
+        tab.addEventListener(
+          'keydown',
+          (event) => {
+            let target: number | undefined
+            if (event.key === 'ArrowRight') target = (index + 1) % tabs.length
+            if (event.key === 'ArrowLeft') target = (index + tabs.length - 1) % tabs.length
+            if (event.key === 'Home') target = 0
+            if (event.key === 'End') target = tabs.length - 1
+            if (target !== undefined) {
+              event.preventDefault()
+              select(target, true)
+            }
+          },
+          { signal }
+        )
+      })
+      select(0)
+      this.dataset.ready = 'true'
+    }
+    disconnectedCallback() {
+      this.controller?.abort()
+    }
+  }
+  if (!customElements.get('code-tabs')) customElements.define('code-tabs', CodeTabs)
+</script>

@@ -166,6 +166,7 @@ div.astro-code .collapse-toggle {
   padding: 0.35rem;
   border: 0;
   border-top: 1px solid hsl(var(--border));
+  border-radius: 0 0 0.75rem 0.75rem;
   background: var(--code-fill);
   color: hsl(var(--muted-foreground));
   cursor: pointer;
@@ -199,4 +200,73 @@ div.astro-code.collapsed .collapse-fade {
   div.astro-code button.copy {
     transition: none;
   }
+}
+
+/* Diff notation keeps syntax tokens intact; markers live outside copied text. */
+div.astro-code.has-diff pre {
+  padding-inline-start: 2.5rem;
+}
+div.astro-code .line.diff {
+  position: relative;
+}
+div.astro-code .line.diff::before {
+  position: absolute;
+  inset-inline-start: -1.5rem;
+  width: 1.5rem;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+}
+div.astro-code .line.diff.add::before {
+  content: '+';
+}
+div.astro-code .line.diff.remove::before {
+  content: '−';
+}
+div.astro-code:has(> .collapse-toggle) > pre {
+  border-radius: 0;
+}
+code-tabs {
+  display: block;
+  margin: 1rem 0;
+}
+code-tabs > .code-tabs-list {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  padding: 0.25rem;
+  border-radius: 0.75rem 0.75rem 0 0;
+  background: hsl(var(--foreground) / 0.1);
+}
+code-tabs > .code-tabs-list > button {
+  flex: none;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  font: inherit;
+  cursor: pointer;
+}
+code-tabs > .code-tabs-list > button:hover {
+  background: hsl(var(--foreground) / 0.05);
+}
+code-tabs > .code-tabs-list > button[aria-selected='true'] {
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.1);
+}
+code-tabs > .code-tabs-list > button:focus-visible,
+div.astro-code .collapse-toggle:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
+}
+code-tabs > div.astro-code {
+  margin: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+code-tabs > div.astro-code > .code-header {
+  border-radius: 0;
+}
+code-tabs > div.astro-code[hidden] {
+  display: none;
 }

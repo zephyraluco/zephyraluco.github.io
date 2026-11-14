@@ -1,19 +1,13 @@
+import type { ElementContent } from 'hast'
 import { h } from 'hastscript'
 import type { ShikiTransformer } from 'shiki'
 
-function parseMetaString(str = '') {
+function parseMetaString(str = ''): Record<string, string> {
   return Object.fromEntries(
-    str.split(' ').reduce(
-      (acc: [string, string | true][], cur) => {
-        const matched = cur.match(/(.+)?=("(.+)"|'(.+)')$/)
-        if (matched === null) return acc
-        const key = matched[1]
-        const value = matched[3] || matched[4] || true
-        acc.push([key, value])
-        return acc
-      },
-      [] as [string, string | true][]
-    )
+    Array.from(str.matchAll(/([\w-]+)=(?:"([^"]*)"|'([^']*)'|([^\s]+))/g), (match) => [
+      match[1],
+      match[2] ?? match[3] ?? match[4]
+    ])
   )
 }
 
@@ -49,12 +43,25 @@ export const processMeta = (): ShikiTransformer => {
   }
 }
 
+function codeText(node: ElementContent): string {
+  if (node.type === 'text') return node.value
+  return node.type === 'element' ? node.children.map(codeText).join('') : ''
+}
+
 // Duckquill-style permanent toolbar: filename or language on the left, copy on the right.
 export const addCodeHeader = (timeout = 2000): ShikiTransformer => ({
   name: 'shiki-transformer-code-header',
   pre(node) {
     const meta = parseMetaString(this.options.meta?.__raw)
-    const label = meta.title?.toString() || this.options.lang || 'text'
+    const label = meta.title || this.options.lang || 'text'
+    if (meta.group) {
+      node.properties['data-code-group'] = meta.group
+      node.properties['data-code-label'] = meta.label || this.options.lang || 'text'
+    }
+    // Notation is authoring metadata, not part of the copied program.
+    const source = /\[!code (?:\+\+|--|highlight)/i.test(this.source)
+      ? node.children.map(codeText).join('')
+      : this.source
     const button = h(
       'button',
       {
@@ -62,7 +69,7 @@ export const addCodeHeader = (timeout = 2000): ShikiTransformer => ({
         type: 'button',
         'aria-label': 'Copy code',
         title: 'Copy code',
-        'data-code': this.source,
+        'data-code': source,
         onclick: `navigator.clipboard.writeText(this.dataset.code).then(() => {
         this.classList.add('copied');
         this.setAttribute('aria-label', 'Code copied');
@@ -119,16 +126,16 @@ export const addCollapse = (displayLineCount?: number): ShikiTransformer => {
     name: 'shiki-transformer-add-collapse',
     pre(node) {
       if (this.lines.length <= line) return
-      node.properties = {
-        ...node.properties,
-        class: `${(node.properties?.class as string) || ''} collapsed`
-      }
+      this.addClassToHast(node, 'collapsed')
       const collapse = h(
         'button',
         {
-          class: 'collapse-toggle bg-card text-muted-foreground rounded-lg m-2',
+          class: 'collapse-toggle',
+          type: 'button',
+          'aria-expanded': 'false',
           'aria-label': 'Toggle collapse code block',
-          onclick: "this.parentElement.classList.toggle('collapsed')"
+          onclick:
+            "const collapsed = this.parentElement.classList.toggle('collapsed'); this.setAttribute('aria-expanded', String(!collapsed))"
         },
         [
           h('svg', { class: 'size-5' }, [

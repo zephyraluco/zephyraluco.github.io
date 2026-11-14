@@ -210,7 +210,7 @@ test('navigation uses astro-pure typography and preserves icon sizes with keyboa
   await expect(navigation).toHaveCSS('padding', '5.6px 8px')
   await expect(navigation).toHaveCSS('border-radius', '999px')
   await expect(page.locator('.brand')).toHaveCSS('font-size', '16px')
-  await expect(page.locator('.brand')).toHaveCSS('font-weight', '600')
+  await expect(page.locator('.brand')).toHaveCSS('font-weight', '550')
   for (const selector of ['.brand svg', '.theme-toggle svg:visible', '.actions a svg']) {
     expect(
       await page
