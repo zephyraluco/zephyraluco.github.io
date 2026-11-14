@@ -201,13 +201,24 @@ test('inline code remains non-interactive text', async ({ page }) => {
   expect(await inline.evaluate((el) => getComputedStyle(el).transform)).toBe(before)
 })
 
-test('navigation matches Duckquill geometry and keyboard access', async ({ page }) => {
+test('navigation preserves original font and icon sizes with keyboard access', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 })
   await page.goto('/')
   const navigation = page.locator('.navigation')
   await expect(navigation).toHaveCSS('padding', '8px')
   await expect(navigation).toHaveCSS('border-radius', '26px')
-  expect(await navigation.evaluate((el) => el.getBoundingClientRect().height)).toBe(52)
+  await expect(page.locator('.brand')).toHaveCSS('font-size', '16.8px')
+  await expect(page.locator('.brand')).toHaveCSS('font-weight', '750')
+  for (const selector of ['.brand svg', '.theme-toggle svg:visible', '.actions a svg']) {
+    expect(
+      await page
+        .locator(selector)
+        .first()
+        .evaluate((el) => el.getBoundingClientRect().width)
+    ).toBeCloseTo(18.4, 1)
+  }
+  await expect(page.locator('.nav-links a').first()).toHaveCSS('font-size', '16px')
+  await expect(page.locator('.nav-links a').first()).toHaveCSS('font-weight', '650')
   expect(
     await navigation.evaluate((el) => getComputedStyle(el, '::before').backdropFilter)
   ).toContain('blur(12px)')
@@ -227,6 +238,7 @@ test('theme submenu supports keyboard, dismissal and mobile layout', async ({ pa
   await page.goto('/')
   const toggle = page.locator('.theme-toggle')
   const options = page.locator('.theme-options')
+  await expect(page.locator('.brand')).toHaveCSS('font-size', '15.2px')
   await toggle.focus()
   await page.keyboard.press('ArrowDown')
   await expect(page.getByRole('button', { name: 'System theme', exact: true })).toBeFocused()
