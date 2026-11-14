@@ -383,7 +383,7 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     background: transparent;
     color: inherit;
     font: inherit;
-    font-weight: 700;
+    font-weight: 500;
     line-height: 1;
     text-align: center;
     text-decoration: none;
@@ -413,8 +413,8 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
   }
   .navigation .brand {
     gap: 0.25rem;
-    font-size: 1.05rem;
-    font-weight: 750;
+    font-size: 1.25rem;
+    font-weight: 500;
     color: var(--nav-text);
     white-space: nowrap;
   }
@@ -440,7 +440,7 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
   .nav-links a,
   .mobile-links a {
     font-size: 1rem;
-    font-weight: 650;
+    font-weight: 500;
   }
   .navigation .icon-button {
     width: 2.4rem;
@@ -541,11 +541,6 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     }
     .mobile-links a {
       min-height: 2.75rem;
-    }
-  }
-  @media (max-width: 540px) {
-    .navigation .brand {
-      font-size: 0.95rem;
     }
   }
   @media (prefers-reduced-motion: reduce) {
