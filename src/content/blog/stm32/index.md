@@ -6,7 +6,6 @@ updatedDate: '2026-09-06'
 ---
 
 > [!NOTE]
-> **信息**
 >
 > stm32+rtthread集成项目：[stm32-nano](https://github.com/zephyraluco/stm32-nano)
 

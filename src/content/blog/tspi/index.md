@@ -15,7 +15,6 @@ language: '中文'
 2. 官方烧录教程：[https://wiki.lckfb.com/zh-hans/tspi-rk3566/system-usage/img-download.html](https://wiki.lckfb.com/zh-hans/tspi-rk3566/system-usage/img-download.html)
 
 > [!CAUTION]
-> **危险**
 >
 > 烧录armbian系统后，后续将无法进入Loader模式，只能使用MASKROM模式
 
@@ -56,7 +55,6 @@ cd armbian
 后续按需选择，设置完参数后会自动进行编译，等待完成即可。
 
 > [!WARNING]
-> **注意**
 >
 > 如果编译失败则可能是缺少环境导致的，可以运行以下命令: `sudo apt install -y
 software-properties-common python3-pip`
@@ -78,7 +76,6 @@ software-properties-common python3-pip`
 解压并运行烧录工具，按照官方文档进入Loader/MASKROM模式，选择烧录固件:
 
 > [!WARNING]
-> **注意**
 >
 > 进入Loader/MASKROM模式的方法可以参考官方文档，或者直接搜索相关教程
 
