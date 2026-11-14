@@ -205,7 +205,7 @@ test('navigation preserves original font and icon sizes with keyboard access', a
   await page.setViewportSize({ width: 1280, height: 800 })
   await page.goto('/')
   const navigation = page.locator('.navigation')
-  await expect(navigation).toHaveCSS('padding', '8px')
+  await expect(navigation).toHaveCSS('padding', '5.6px 8px')
   await expect(navigation).toHaveCSS('border-radius', '26px')
   await expect(page.locator('.brand')).toHaveCSS('font-size', '16.8px')
   await expect(page.locator('.brand')).toHaveCSS('font-weight', '750')
@@ -262,4 +262,15 @@ test('theme submenu supports keyboard, dismissal and mobile layout', async ({ pa
   await toggle.click()
   await page.locator('h1').first().click()
   await expect(options).toBeHidden()
+})
+
+test('theme icon matches stored preference before header JavaScript loads', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('theme', 'light'))
+  await page.route('**/_astro/*.js', (route) => route.abort())
+  for (const path of ['/', '/notes', '/blog']) {
+    await page.goto(path)
+    await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'light')
+    await expect(page.locator('.theme-toggle [data-theme-icon="light"]')).toBeVisible()
+    await expect(page.locator('.theme-toggle [data-theme-icon="system"]')).toBeHidden()
+  }
 })

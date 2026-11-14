@@ -10,6 +10,7 @@ export function setTheme(theme?: ColorTheme, save = false): ColorTheme {
   const selected =
     theme ?? (save ? themes[(themes.indexOf(getTheme()) + 1) % themes.length] : getTheme())
   if (save) localStorage.setItem('theme', selected)
+  document.documentElement.dataset.themePreference = selected
   const dark =
     selected === 'dark' ||
     (selected === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
