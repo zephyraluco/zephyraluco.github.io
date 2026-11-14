@@ -5,6 +5,8 @@
   --code-background: var(--code-background-light, hsl(var(--background)));
   --code-fill: hsl(var(--foreground) / 0.1);
   --code-edge: inset 0 0.0625rem 0 rgb(255 255 255 / 0.1);
+  /* Horizontal breathing room after the longest line when scrolled to the end. */
+  --code-end-space: 3rem;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -32,6 +34,8 @@
   height: 2.5rem;
   padding: 0.25rem;
   border-radius: 0.75rem 0.75rem 0 0;
+  /* 工具栏固定用页面底色，普通块与代码组（code-tabs 容器同色）保持一致。 */
+  background-color: hsl(var(--background));
   background-image: linear-gradient(
     to right,
     var(--code-fill) 50%,
@@ -100,7 +104,8 @@ div.astro-code .code-label {
 }
 div.astro-code pre {
   margin: 0;
-  padding: 1rem;
+  /* 行尾留白放在容器上：若加在 .line 上，换行符会被推离文本，选区会断开。 */
+  padding: 1rem var(--code-end-space) 1rem 0;
   border: none;
   border-radius: 0 0 0.75rem 0.75rem;
   box-shadow: none;
@@ -126,6 +131,28 @@ div.astro-code code::before,
 div.astro-code code::after {
   content: none;
 }
+/* 行号列：普通行显示计数，差异行用 + / − 占用同一列；均为生成内容，不影响复制。 */
+div.astro-code code {
+  counter-reset: code-line;
+}
+div.astro-code .line::before {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  display: inline-block;
+  width: 2.75rem;
+  padding-inline-end: 0.75rem;
+  counter-increment: code-line;
+  content: counter(code-line);
+  /* 不透明底色：横向滚动时遮住从行号下方滚过的代码。 */
+  background-color: var(--code-background);
+  color: hsl(var(--muted-foreground) / 0.45);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  user-select: none;
+}
 div.astro-code .line {
   padding: 0;
 }
@@ -145,7 +172,8 @@ div.astro-code pre span {
 }
 div.astro-code :is(.highlighted, .diff) {
   display: inline-block;
-  min-width: 100%;
+  /* 叠加容器右内边距，让色块行依旧满宽贴到右边缘。 */
+  min-width: calc(100% + var(--code-end-space));
 }
 div.astro-code .highlighted {
   background: rgb(149 166 183 / 0.32) !important;
@@ -156,25 +184,51 @@ div.astro-code .diff.remove {
 div.astro-code .diff.add {
   background: rgb(16 185 129 / 0.16);
 }
+/* 固定行号的底色跟随行状态，保证被色块描过的行不会透出下面的代码。 */
+div.astro-code .line.highlighted::before {
+  background-image: linear-gradient(rgb(149 166 183 / 0.32), rgb(149 166 183 / 0.32));
+}
+div.astro-code .line.diff.add::before {
+  background-image: linear-gradient(rgb(16 185 129 / 0.16), rgb(16 185 129 / 0.16));
+}
+div.astro-code .line.diff.remove::before {
+  background-image: linear-gradient(rgb(244 63 94 / 0.16), rgb(244 63 94 / 0.16));
+}
 div.astro-code .collapse-toggle {
   z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
+  gap: 0.35rem;
+  height: 2.5rem;
   margin: 0;
-  padding: 0.35rem;
+  padding: 0.25rem;
   border: 0;
-  border-top: 1px solid hsl(var(--border));
   border-radius: 0 0 0.75rem 0.75rem;
-  background: var(--code-fill);
+  /* 与工具栏同一套底色与高光。 */
+  background-color: hsl(var(--background));
+  background-image: linear-gradient(
+    to right,
+    var(--code-fill) 50%,
+    hsl(var(--primary) / 0.2) 75%,
+    var(--code-fill) 100%
+  );
+  background-size: 200%;
   color: hsl(var(--muted-foreground));
+  font-size: 1rem;
+  line-height: 1;
   cursor: pointer;
+  transition: color 150ms;
+}
+div.astro-code .collapse-toggle:hover {
+  color: hsl(var(--foreground));
 }
 div.astro-code .collapse-toggle .desc::before {
   content: 'Collapse';
 }
 div.astro-code .collapse-toggle svg {
+  width: 1rem;
+  height: 1rem;
   transform: rotate(180deg);
 }
 div.astro-code.collapsed pre {
@@ -191,33 +245,22 @@ div.astro-code.collapsed .collapse-fade {
   position: absolute;
   z-index: 2;
   inset-inline: 0;
-  bottom: 2rem;
+  bottom: 2.5rem;
   height: 5rem;
   background: linear-gradient(transparent, var(--code-background));
   pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  :is(div.astro-code, code-tabs) button.copy {
+  :is(div.astro-code, code-tabs) button.copy,
+  div.astro-code .collapse-toggle {
     transition: none;
   }
 }
 
-/* Diff notation keeps syntax tokens intact; markers live outside copied text. */
-div.astro-code.has-diff pre {
-  padding-inline-start: 2.5rem;
-}
-div.astro-code .line.diff {
-  position: relative;
-}
+/* Diff notation keeps syntax tokens intact; the marker replaces that line's number. */
 div.astro-code .line.diff::before {
-  position: absolute;
-  inset-inline-start: -1.5rem;
-  width: 1.5rem;
-  text-align: center;
-  color: hsl(var(--muted-foreground));
-}
-div.astro-code .line.diff.add::before {
   content: '+';
+  color: hsl(var(--muted-foreground));
 }
 div.astro-code .line.diff.remove::before {
   content: '−';

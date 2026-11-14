@@ -77,6 +77,21 @@ test('code tabs switch panels with pointer and keyboard and copy the active prog
   expect(
     await panel.locator('.diff.add').evaluate((el) => getComputedStyle(el, '::before').content)
   ).toBe('"+"')
+  // Diff markers occupy the same gutter column as the generated line numbers.
+  expect(
+    await panel
+      .locator('.line:not(.diff)')
+      .first()
+      .evaluate((el) => getComputedStyle(el, '::before').width)
+  ).toBe(
+    await panel.locator('.diff.add').evaluate((el) => getComputedStyle(el, '::before').width)
+  )
+  expect(
+    await panel
+      .locator('.line:not(.diff)')
+      .first()
+      .evaluate((el) => getComputedStyle(el, '::before').position)
+  ).toBe('sticky')
   await group.locator('button.copy:visible').click()
   const copied = await page.evaluate(() => navigator.clipboard.readText())
   expect(copied).toContain('const value = 1')
