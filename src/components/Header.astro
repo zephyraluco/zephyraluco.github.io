@@ -163,14 +163,6 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
       </div>
       <a
         class='icon-button secondary-action'
-        href='/rss.xml'
-        aria-label='RSS feed'
-        title='RSS feed'
-      >
-        <Icon name='rss' />
-      </a>
-      <a
-        class='icon-button secondary-action'
         href='https://github.com/zephyraluco/zephyraluco.github.io'
         aria-label='Source on GitHub'
         title='Source on GitHub'
@@ -188,7 +180,6 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
             {title}
           </a>
         ))}
-        <a href='/rss.xml'>RSS feed</a>
         <a href='https://github.com/zephyraluco/zephyraluco.github.io'>GitHub</a>
       </div>
     </details>
@@ -341,9 +332,10 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     --nav-shadow: 0 0.75rem 1.5rem -1rem rgb(0 0 0 / 0.5);
     display: block;
     position: sticky;
-    top: max(1rem, env(safe-area-inset-top));
+    top: max(0.75rem, env(safe-area-inset-top));
     z-index: 50;
-    width: max-content;
+    /* Keep the centered shell stable while the web font loads. */
+    width: 36rem;
     max-width: 100%;
     margin: 1rem auto 3rem;
   }
@@ -352,10 +344,9 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    width: max-content;
-    max-width: min(45rem, 100%);
-    padding: 0.5rem;
-    border-radius: 1.625rem;
+    width: 100%;
+    padding: 0.35rem 0.5rem;
+    border-radius: 999px;
     font-size: 1rem;
     color: var(--nav-text);
   }
@@ -412,7 +403,8 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     box-shadow: var(--nav-edge);
   }
   .navigation .brand {
-    gap: 0.25rem;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
     font-size: 1.25rem;
     font-weight: 500;
     color: var(--nav-text);
@@ -428,7 +420,7 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
   .divider {
     align-self: stretch;
     width: max(1px, 0.0625em);
-    margin: 0 0.25rem;
+    margin: 0.2rem 0.45rem;
     background: hsl(var(--foreground) / 0.1);
   }
   .nav-links,
@@ -437,15 +429,27 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     align-items: center;
     gap: 0.25rem;
   }
+  .nav-links {
+    flex: 1;
+    justify-content: space-evenly;
+    gap: 0.15rem;
+  }
+  .actions {
+    gap: 0.1rem;
+    margin-inline-start: 0.35rem;
+  }
+  .nav-links a {
+    padding: 0.45rem 0.65rem;
+  }
   .nav-links a,
   .mobile-links a {
     font-size: 1rem;
     font-weight: 500;
   }
   .navigation .icon-button {
-    width: 2.4rem;
-    height: 2.4rem;
-    padding: 0.625rem;
+    width: 2.15rem;
+    height: 2.15rem;
+    padding: 0.45rem;
   }
   .icon-button :global(svg) {
     flex-shrink: 0;
@@ -517,6 +521,12 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     box-shadow: var(--nav-edge), var(--nav-shadow);
   }
   @media (max-width: 720px) {
+    site-header {
+      width: 18rem;
+    }
+    .actions {
+      margin-inline-start: auto;
+    }
     .navigation .nav-links,
     .navigation .divider,
     .navigation .secondary-action {
@@ -541,6 +551,20 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     }
     .mobile-links a {
       min-height: 2.75rem;
+    }
+  }
+  @media (max-width: 540px) {
+    .navigation {
+      gap: 0.1rem;
+      padding: 0.3rem;
+    }
+    .navigation .brand {
+      gap: 0.35rem;
+      padding: 0.35rem 0.5rem;
+    }
+    .navigation .icon-button {
+      width: 2rem;
+      height: 2rem;
     }
   }
   @media (prefers-reduced-motion: reduce) {
