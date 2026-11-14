@@ -178,6 +178,14 @@ test('inline code remains non-interactive text', async ({ page }) => {
   const inline = page.locator('.prose :not(pre) > code').first()
   await inline.scrollIntoViewIfNeeded()
   await expect(inline).toHaveCSS('border-radius', '8px')
+  await expect(inline).toHaveCSS('border-style', 'none')
+  const style = await inline.evaluate((el) => {
+    const css = getComputedStyle(el)
+    return { background: css.backgroundColor, shadow: css.boxShadow, font: css.fontFamily }
+  })
+  expect(style.background).toMatch(/rgba\(.+, 0\.05\)/)
+  expect(style.shadow).toContain('rgba(255, 255, 255, 0.1)')
+  expect(style.font).toContain('Cascadia Code')
   await expect(inline).toHaveCSS('cursor', 'auto')
   await expect(inline).not.toHaveAttribute('tabindex')
   await expect(inline).not.toHaveAttribute('role', 'button')

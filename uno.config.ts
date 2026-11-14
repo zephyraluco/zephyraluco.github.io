@@ -59,25 +59,7 @@ const typographyConfig: TypographyOptions = {
       'word-break': 'break-word',
       'overflow-wrap': 'anywhere'
     },
-    // Inline code
-    ':not(pre) > code': {
-      'white-space': 'pre-wrap',
-      'word-break': 'break-all'
-    },
-    ...(typographyCustom.inlineCodeBlockStyle === 'modern' && {
-      ':not(pre) > code': {
-        padding: '0.3em 0.5em',
-        border: `1px solid ${border}`,
-        'border-radius': radius,
-        'background-color': bgMuted
-      },
-      ':not(pre)>code::before': {
-        content: 'none'
-      },
-      ':not(pre)>code::after': {
-        content: 'none'
-      }
-    }),
+    // Inline code is styled exclusively in src/assets/styles/markdown.css.
     // Blockquote
     blockquote: {
       position: 'relative',
