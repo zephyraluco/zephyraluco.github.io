@@ -172,3 +172,17 @@ test('code toolbars stay visible and tables use native full-width layout', async
   const frameWidth = await table.locator('..').evaluate((el) => el.clientWidth)
   expect(Math.abs(width - frameWidth)).toBeLessThan(2)
 })
+
+test('inline code remains non-interactive text', async ({ page }) => {
+  await page.goto('/notes/rust/' + encodeURIComponent('rust语法'))
+  const inline = page.locator('.prose :not(pre) > code').first()
+  await inline.scrollIntoViewIfNeeded()
+  await expect(inline).toHaveCSS('border-radius', '8px')
+  await expect(inline).toHaveCSS('cursor', 'auto')
+  await expect(inline).not.toHaveAttribute('tabindex')
+  await expect(inline).not.toHaveAttribute('role', 'button')
+  await expect(inline).not.toHaveClass(/site-button/)
+  const before = await inline.evaluate((el) => getComputedStyle(el).transform)
+  await inline.hover()
+  expect(await inline.evaluate((el) => getComputedStyle(el).transform)).toBe(before)
+})
