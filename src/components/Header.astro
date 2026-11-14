@@ -334,7 +334,7 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
 
 <style>
   site-header {
-    --nav-glass: hsl(var(--background) / 0.7);
+    --nav-glass: hsl(var(--muted) / 0.7);
     --nav-text: hsl(var(--muted-foreground));
     --nav-hover: hsl(var(--foreground) / 0.05);
     --nav-edge: inset 0 0.0625rem 0 rgb(255 255 255 / 0.1);
@@ -354,7 +354,7 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     gap: 0.25rem;
     width: max-content;
     max-width: min(45rem, 100%);
-    padding: 0.35rem 0.5rem;
+    padding: 0.5rem;
     border-radius: 1.625rem;
     font-size: 1rem;
     color: var(--nav-text);
@@ -384,7 +384,7 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     color: inherit;
     font: inherit;
     font-weight: 700;
-    line-height: 1.5;
+    line-height: 1;
     text-align: center;
     text-decoration: none;
     cursor: pointer;
@@ -412,11 +412,10 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     box-shadow: var(--nav-edge);
   }
   .navigation .brand {
-    gap: 0.4rem;
-    padding: 0.4rem 0.75rem;
+    gap: 0.25rem;
     font-size: 1.05rem;
     font-weight: 750;
-    color: hsl(var(--primary));
+    color: var(--nav-text);
     white-space: nowrap;
   }
   .navigation .brand[aria-current='page'] {
@@ -429,7 +428,7 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
   .divider {
     align-self: stretch;
     width: max(1px, 0.0625em);
-    margin: 0.2rem 0.45rem;
+    margin: 0 0.25rem;
     background: hsl(var(--foreground) / 0.1);
   }
   .nav-links,
@@ -438,27 +437,18 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     align-items: center;
     gap: 0.25rem;
   }
-  .nav-links {
-    gap: 0.15rem;
-  }
-  .actions {
-    gap: 0.1rem;
-    margin-inline-start: 0.35rem;
-  }
-  .nav-links a {
-    padding: 0.45rem 0.65rem;
-  }
   .nav-links a,
   .mobile-links a {
     font-size: 1rem;
     font-weight: 650;
   }
   .navigation .icon-button {
-    width: 2.15rem;
-    height: 2.15rem;
-    padding: 0.45rem;
+    width: 2.4rem;
+    height: 2.4rem;
+    padding: 0.625rem;
   }
   .icon-button :global(svg) {
+    flex-shrink: 0;
     width: 1.15rem;
     height: 1.15rem;
   }
@@ -554,18 +544,8 @@ const isCurrent = (link: string) => pathname === link || pathname.startsWith(`${
     }
   }
   @media (max-width: 540px) {
-    .navigation {
-      gap: 0.1rem;
-      padding: 0.3rem;
-    }
     .navigation .brand {
-      gap: 0.35rem;
-      padding: 0.35rem 0.5rem;
       font-size: 0.95rem;
-    }
-    .navigation .icon-button {
-      width: 2rem;
-      height: 2rem;
     }
   }
   @media (prefers-reduced-motion: reduce) {

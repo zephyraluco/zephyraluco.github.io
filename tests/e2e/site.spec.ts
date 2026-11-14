@@ -205,7 +205,7 @@ test('navigation preserves original font and icon sizes with keyboard access', a
   await page.setViewportSize({ width: 1280, height: 800 })
   await page.goto('/')
   const navigation = page.locator('.navigation')
-  await expect(navigation).toHaveCSS('padding', '5.6px 8px')
+  await expect(navigation).toHaveCSS('padding', '8px')
   await expect(navigation).toHaveCSS('border-radius', '26px')
   await expect(page.locator('.brand')).toHaveCSS('font-size', '16.8px')
   await expect(page.locator('.brand')).toHaveCSS('font-weight', '750')
