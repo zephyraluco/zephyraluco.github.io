@@ -201,14 +201,16 @@ test('inline code remains non-interactive text', async ({ page }) => {
   expect(await inline.evaluate((el) => getComputedStyle(el).transform)).toBe(before)
 })
 
-test('navigation preserves original font and icon sizes with keyboard access', async ({ page }) => {
+test('navigation uses astro-pure typography and preserves icon sizes with keyboard access', async ({
+  page
+}) => {
   await page.setViewportSize({ width: 1280, height: 800 })
   await page.goto('/')
   const navigation = page.locator('.navigation')
-  await expect(navigation).toHaveCSS('padding', '8px')
-  await expect(navigation).toHaveCSS('border-radius', '26px')
-  await expect(page.locator('.brand')).toHaveCSS('font-size', '16.8px')
-  await expect(page.locator('.brand')).toHaveCSS('font-weight', '750')
+  await expect(navigation).toHaveCSS('padding', '5.6px 8px')
+  await expect(navigation).toHaveCSS('border-radius', '999px')
+  await expect(page.locator('.brand')).toHaveCSS('font-size', '16px')
+  await expect(page.locator('.brand')).toHaveCSS('font-weight', '600')
   for (const selector of ['.brand svg', '.theme-toggle svg:visible', '.actions a svg']) {
     expect(
       await page
@@ -218,7 +220,7 @@ test('navigation preserves original font and icon sizes with keyboard access', a
     ).toBeCloseTo(18.4, 1)
   }
   await expect(page.locator('.nav-links a').first()).toHaveCSS('font-size', '16px')
-  await expect(page.locator('.nav-links a').first()).toHaveCSS('font-weight', '650')
+  await expect(page.locator('.nav-links a').first()).toHaveCSS('font-weight', '500')
   expect(
     await navigation.evaluate((el) => getComputedStyle(el, '::before').backdropFilter)
   ).toContain('blur(12px)')
@@ -238,7 +240,7 @@ test('theme submenu supports keyboard, dismissal and mobile layout', async ({ pa
   await page.goto('/')
   const toggle = page.locator('.theme-toggle')
   const options = page.locator('.theme-options')
-  await expect(page.locator('.brand')).toHaveCSS('font-size', '15.2px')
+  await expect(page.locator('.brand')).toHaveCSS('font-size', '16px')
   await toggle.focus()
   await page.keyboard.press('ArrowDown')
   await expect(page.getByRole('button', { name: 'System theme', exact: true })).toBeFocused()
@@ -272,5 +274,37 @@ test('theme icon matches stored preference before header JavaScript loads', asyn
     await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'light')
     await expect(page.locator('.theme-toggle [data-theme-icon="light"]')).toBeVisible()
     await expect(page.locator('.theme-toggle [data-theme-icon="system"]')).toBeHidden()
+  }
+})
+
+test('navigation stays centered during font loading and page changes without RSS controls', async ({
+  page
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await page.route('**/*.woff2', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    await route.continue()
+  })
+  await page.addInitScript(() => {
+    const frames: number[][] = []
+    Object.defineProperty(window, 'navFrames', { value: frames })
+    const sample = () => {
+      const nav = document.querySelector('.navigation')
+      if (nav) {
+        const rect = nav.getBoundingClientRect()
+        frames.push([rect.x, rect.y, rect.width, rect.height])
+      }
+      requestAnimationFrame(sample)
+    }
+    requestAnimationFrame(sample)
+  })
+  for (const path of ['/', '/blog', '/notes', '/projects', '/about']) {
+    await page.goto(path)
+    await page.evaluate(() => document.fonts.ready)
+    const frames = await page.evaluate(() => Reflect.get(window, 'navFrames') as number[][])
+    expect(frames.length).toBeGreaterThan(0)
+    expect(new Set(frames.map((frame) => JSON.stringify(frame))).size).toBe(1)
+    await expect(page.locator('site-header a[href="/rss.xml"]')).toHaveCount(0)
+    await expect(page.locator('.navigation')).toHaveCSS('width', '576px')
   }
 })

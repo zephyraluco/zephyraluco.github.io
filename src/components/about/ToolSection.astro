@@ -5,6 +5,8 @@ import { Image } from 'astro:assets'
 import { cn } from '../../lib/class-merge'
 import Svg from '../ui/Svg.astro'
 
+import '../../assets/styles/about-link.css'
+
 interface Props {
   class?: string
   title: string
@@ -32,12 +34,12 @@ function isImageMetadata(obj: unknown): obj is ImageMetadata {
   <div class='grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-2'>
     {tools.map((tool) => (
       <a
-        class='group relative text-sm leading-normal no-underline'
+        class='about-link tool-button group relative text-sm leading-normal no-underline'
         href={tool.href}
         id={tool.name}
         target='_blank'
       >
-        <div class='flex items-center gap-x-3 rounded-lg border border-transparent px-1.5 py-1 transition-colors hover:border-border hover:bg-muted'>
+        <div class='flex items-center gap-x-3 border border-transparent px-1.5 py-1'>
           {tool.darkIcon ? (
             <>
               {isImageMetadata(tool.icon) ? (
@@ -74,7 +76,7 @@ function isImageMetadata(obj: unknown): obj is ImageMetadata {
             </>
           )}
           <div class='z-20 flex flex-col'>
-            <div class='font-medium text-foreground'>{tool.name}</div>
+            <div class='about-link-title font-medium text-foreground'>{tool.name}</div>
             <div class='font-normal'>{tool.description}</div>
           </div>
         </div>
