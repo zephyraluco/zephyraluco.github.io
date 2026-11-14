@@ -32,12 +32,12 @@ function isImageMetadata(obj: unknown): obj is ImageMetadata {
   <div class='grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-2'>
     {tools.map((tool) => (
       <a
-        class='group relative text-sm leading-normal no-underline'
+        class='tool-button group relative text-sm leading-normal no-underline'
         href={tool.href}
         id={tool.name}
         target='_blank'
       >
-        <div class='flex items-center gap-x-3 rounded-lg border border-transparent px-1.5 py-1 transition-colors hover:border-border hover:bg-muted'>
+        <div class='flex items-center gap-x-3 border border-transparent px-1.5 py-1'>
           {tool.darkIcon ? (
             <>
               {isImageMetadata(tool.icon) ? (
@@ -82,3 +82,35 @@ function isImageMetadata(obj: unknown): obj is ImageMetadata {
     ))}
   </div>
 </div>
+
+<style>
+  .tool-button {
+    border-radius: 0.75rem;
+    background: hsl(var(--foreground) / 0.05);
+    box-shadow: inset 0 0.0625rem 0 rgb(255 255 255 / 0.1);
+    color: hsl(var(--muted-foreground));
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      transform 0.2s;
+  }
+  .tool-button:hover {
+    background: hsl(var(--foreground) / 0.1);
+    color: hsl(var(--foreground));
+  }
+  .tool-button:active {
+    transform: scale(0.9);
+  }
+  .tool-button:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tool-button {
+      transition: none;
+    }
+    .tool-button:active {
+      transform: none;
+    }
+  }
+</style>
