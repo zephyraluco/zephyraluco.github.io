@@ -24,6 +24,7 @@ test.beforeAll(async () => {
     await processor.render(
       [
         '```ts group="example" label="TypeScript" title="example.ts"',
+        'const unchanged = true',
         'const value = 1 // [!code --]',
         'const value = 2 // [!code ++]',
         '```',
@@ -83,9 +84,7 @@ test('code tabs switch panels with pointer and keyboard and copy the active prog
       .locator('.line:not(.diff)')
       .first()
       .evaluate((el) => getComputedStyle(el, '::before').width)
-  ).toBe(
-    await panel.locator('.diff.add').evaluate((el) => getComputedStyle(el, '::before').width)
-  )
+  ).toBe(await panel.locator('.diff.add').evaluate((el) => getComputedStyle(el, '::before').width))
   expect(
     await panel
       .locator('.line:not(.diff)')
