@@ -1,0 +1,3 @@
+[install]
+# Keep legacy language-service APIs isolated from the native TypeScript 7 compiler.
+linker = "isolated"

@@ -9,8 +9,9 @@ import remarkRehype from 'remark-rehype'
 import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 
-import { getBlogCollection, sortMDByDate } from 'astro-pure/server'
-import config from 'virtual:config'
+import config from '../config/index'
+import { getBlogCollection, sortMDByDate } from '../lib/content'
+import remarkAlerts from '../plugins/remark-alerts'
 
 // Get dynamic import of images as a map collection
 const imagesGlob = import.meta.glob<{ default: ImageMetadata }>(
@@ -45,6 +46,7 @@ const renderContent = async (post: CollectionEntry<'blog'>, site: URL) => {
 
   const file = await unified()
     .use(remarkParse)
+    .use(remarkAlerts)
     .use(remarkReplaceImageLink)
     .use(remarkRehype)
     .use(rehypeStringify)

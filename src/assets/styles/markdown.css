@@ -1,0 +1,147 @@
+/* Standard GitHub Alerts rendered with the original astro-pure Aside appearance. */
+.prose .markdown-alert {
+  margin: 0.75rem 0;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+}
+.prose .markdown-alert-container {
+  border-inline-start: 0.5rem solid hsl(var(--primary));
+  padding: 0.75rem 1rem;
+  background: hsl(var(--primary) / 0.07);
+}
+.prose :is(.markdown-alert-tip, .markdown-alert-important) .markdown-alert-container {
+  --primary: 234 60% 60%;
+}
+.prose .markdown-alert-warning .markdown-alert-container {
+  --primary: 41 90% 50%;
+}
+.prose .markdown-alert-caution .markdown-alert-container {
+  --primary: 339 90% 60%;
+}
+.prose .markdown-alert .markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: hsl(var(--primary));
+  font-weight: 500;
+}
+.prose .markdown-alert-title svg {
+  flex: none;
+  width: 1.5em;
+  height: 1.5em;
+}
+.prose .markdown-alert-content {
+  margin-top: 0.5rem;
+}
+.prose .markdown-alert-content > :first-child {
+  margin-top: 0;
+}
+.prose .markdown-alert-content > :last-child {
+  margin-bottom: 0;
+}
+
+/* Inline code is text, not a control: compact monospace styling, no interaction. */
+.prose code:not(pre code) {
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.125rem 0.375rem;
+  background: hsl(var(--foreground) / 0.05);
+  color: hsl(var(--primary));
+  box-shadow: inset 0 0.0625rem 0 rgb(255 255 255 / 0.1);
+  font-family:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  font-size: 0.875em;
+  font-weight: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.prose code:not(pre code)::before,
+.prose code:not(pre code)::after {
+  content: none;
+}
+
+/* Duckquill's table is a real full-width table, not a display:block scroll area. */
+.prose .markdown-table {
+  margin: 1rem 0;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  background: hsl(var(--foreground) / 0.035);
+  box-shadow: inset 0 1px hsl(var(--foreground) / 0.04);
+}
+.prose .markdown-table:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 3px;
+}
+.prose .markdown-table table {
+  display: table;
+  margin: 0;
+  width: 100%;
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: transparent;
+  color: hsl(var(--foreground));
+  font-size: 1em;
+  line-height: 1.5;
+}
+.prose .markdown-table :is(tr, th, td) {
+  border: none;
+}
+.prose .markdown-table :is(th, td) {
+  padding: 0.5rem 1rem;
+  text-align: start;
+  vertical-align: middle;
+}
+.prose .markdown-table th {
+  background: hsl(var(--foreground) / 0.12);
+  color: hsl(var(--foreground));
+  font-weight: 700;
+}
+.prose .markdown-table tbody tr:nth-child(even) {
+  background: hsl(var(--foreground) / 0.05);
+}
+
+/* KaTeX keeps its mathematical typography; wide equations scroll within the article. */
+.prose .katex-display {
+  max-width: 100%;
+  margin-block: 1.5rem;
+  padding: 0.75rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.prose .mermaid {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.85rem;
+  background: hsl(var(--muted) / 0.45);
+  box-shadow: 0 5px 15px -10px hsl(var(--foreground) / 0.2);
+}
+.prose .mermaid .mermaid-interactive {
+  min-width: 0;
+}
+.prose .mermaid .mermaid-ctrl {
+  border-color: hsl(var(--border));
+  border-radius: 0.5rem;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+.prose .mermaid .mermaid-ctrl:hover {
+  background: hsl(var(--muted));
+}
+.prose .mermaid .mermaid-ctrl.active {
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary));
+  color: hsl(var(--background));
+}
+
+.prose .markdown-table [align='center'] {
+  text-align: center;
+}
+.prose .markdown-table [align='right'] {
+  text-align: right;
+}

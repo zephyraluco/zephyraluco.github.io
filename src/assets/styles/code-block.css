@@ -1,0 +1,334 @@
+/* Duckquill _pre-container.scss + _code.scss geometry; astro-pure token colors.
+ * This is the sole owner of code-block layout. Do not layer old toolbar/gutter rules over it.
+ */
+:is(div.astro-code, code-tabs) {
+  --code-background: var(--code-background-light, hsl(var(--background)));
+  --code-fill: hsl(var(--foreground) / 0.1);
+  --code-edge: inset 0 0.0625rem 0 rgb(255 255 255 / 0.1);
+  /* Horizontal breathing room after the longest line when scrolled to the end. */
+  --code-end-space: 3rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 1rem 0;
+  padding: 0;
+  border: none;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: var(--code-background);
+  box-shadow:
+    var(--code-edge),
+    0 0 0 0.0625rem rgb(0 0 0 / 0.03),
+    0 0.0625rem 0.1875rem 0.0625rem rgb(0 0 0 / 0.07),
+    0 0.125rem 0.375rem 0.125rem rgb(0 0 0 / 0.03);
+}
+.dark div.astro-code {
+  --code-background: var(--shiki-dark-bg, hsl(var(--muted)));
+}
+:is(div.astro-code, code-tabs) .code-header {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: none;
+  height: 2.5rem;
+  padding: 0.25rem;
+  border-radius: 0.75rem 0.75rem 0 0;
+  /* 工具栏固定用页面底色，普通块与代码组（code-tabs 容器同色）保持一致。 */
+  background-color: hsl(var(--background));
+  background-image: linear-gradient(
+    to right,
+    var(--code-fill) 50%,
+    hsl(var(--primary) / 0.2) 75%,
+    var(--code-fill) 100%
+  );
+  background-size: 200%;
+}
+div.astro-code .code-label {
+  margin-inline-start: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: hsl(var(--muted-foreground));
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+:is(div.astro-code, code-tabs) button.copy {
+  appearance: none;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: hsl(var(--muted-foreground) / 0.8);
+  line-height: 0;
+  cursor: pointer;
+  transition:
+    background-color 150ms,
+    color 150ms;
+}
+:is(div.astro-code, code-tabs) button.copy svg {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+:is(div.astro-code, code-tabs) button.copy:hover {
+  box-shadow: var(--code-edge);
+  background: var(--code-fill);
+  color: hsl(var(--muted-foreground));
+}
+:is(div.astro-code, code-tabs) button.copy:active {
+  transform: scale(0.95);
+}
+:is(div.astro-code, code-tabs) button.copy:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
+}
+:is(div.astro-code, code-tabs) button.copy .success,
+:is(div.astro-code, code-tabs) button.copy.copied .ready {
+  display: none;
+}
+:is(div.astro-code, code-tabs) button.copy.copied .success {
+  display: block;
+}
+:is(div.astro-code, code-tabs) button.copy.copied {
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.1);
+}
+div.astro-code pre {
+  margin: 0;
+  /* 行尾留白放在容器上：若加在 .line 上，换行符会被推离文本，选区会断开。 */
+  padding: 1rem var(--code-end-space) 1rem 0;
+  border: none;
+  border-radius: 0 0 0.75rem 0.75rem;
+  box-shadow: none;
+  background: transparent;
+  overflow: auto;
+  font-family:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+}
+div.astro-code pre code {
+  display: block;
+  width: max-content;
+  min-width: 100%;
+  min-height: 1lh;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+div.astro-code code::before,
+div.astro-code code::after {
+  content: none;
+}
+/* 行号列：普通行显示计数，差异行用 + / − 占用同一列；均为生成内容，不影响复制。 */
+div.astro-code code {
+  counter-reset: code-line;
+}
+div.astro-code .line::before {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  display: inline-block;
+  width: 2.75rem;
+  padding-inline-end: 0.75rem;
+  counter-increment: code-line;
+  content: counter(code-line);
+  /* 不透明底色：横向滚动时遮住从行号下方滚过的代码。 */
+  background-color: var(--code-background);
+  color: hsl(var(--muted-foreground) / 0.45);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  user-select: none;
+}
+div.astro-code .line {
+  padding: 0;
+}
+div.astro-code .line:last-child:empty {
+  display: none;
+}
+div.astro-code pre span {
+  font-weight: var(--shiki-light-font-weight, normal);
+  font-style: var(--shiki-light-font-style, normal);
+  text-decoration: var(--shiki-light-text-decoration, none);
+}
+.dark div.astro-code pre span {
+  color: var(--shiki-dark, inherit) !important;
+  font-weight: var(--shiki-dark-font-weight, normal);
+  font-style: var(--shiki-dark-font-style, normal);
+  text-decoration: var(--shiki-dark-text-decoration, none);
+}
+div.astro-code :is(.highlighted, .diff) {
+  display: inline-block;
+  /* 叠加容器右内边距，让色块行依旧满宽贴到右边缘。 */
+  min-width: calc(100% + var(--code-end-space));
+}
+div.astro-code .highlighted {
+  background: rgb(149 166 183 / 0.32) !important;
+}
+div.astro-code .diff.remove {
+  background: rgb(244 63 94 / 0.16);
+}
+div.astro-code .diff.add {
+  background: rgb(16 185 129 / 0.16);
+}
+/* 固定行号的底色跟随行状态，保证被色块描过的行不会透出下面的代码。 */
+div.astro-code .line.highlighted::before {
+  background-image: linear-gradient(rgb(149 166 183 / 0.32), rgb(149 166 183 / 0.32));
+}
+div.astro-code .line.diff.add::before {
+  background-image: linear-gradient(rgb(16 185 129 / 0.16), rgb(16 185 129 / 0.16));
+}
+div.astro-code .line.diff.remove::before {
+  background-image: linear-gradient(rgb(244 63 94 / 0.16), rgb(244 63 94 / 0.16));
+}
+div.astro-code .collapse-toggle {
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 2.5rem;
+  margin: 0;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: 0 0 0.75rem 0.75rem;
+  /* 与工具栏同一套底色与高光。 */
+  background-color: hsl(var(--background));
+  background-image: linear-gradient(
+    to right,
+    var(--code-fill) 50%,
+    hsl(var(--primary) / 0.2) 75%,
+    var(--code-fill) 100%
+  );
+  background-size: 200%;
+  color: hsl(var(--muted-foreground));
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 150ms;
+}
+div.astro-code .collapse-toggle:hover {
+  color: hsl(var(--foreground));
+}
+div.astro-code .collapse-toggle .desc::before {
+  content: 'Collapse';
+}
+div.astro-code .collapse-toggle svg {
+  width: 1rem;
+  height: 1rem;
+  transform: rotate(180deg);
+}
+div.astro-code.collapsed pre {
+  max-height: 15rem;
+  overflow: hidden;
+}
+div.astro-code.collapsed .collapse-toggle .desc::before {
+  content: 'Show all';
+}
+div.astro-code.collapsed .collapse-toggle svg {
+  transform: none;
+}
+div.astro-code.collapsed .collapse-fade {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 0;
+  bottom: 2.5rem;
+  height: 5rem;
+  background: linear-gradient(transparent, var(--code-background));
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(div.astro-code, code-tabs) button.copy,
+  div.astro-code .collapse-toggle {
+    transition: none;
+  }
+}
+
+/* Diff notation keeps syntax tokens intact; the marker replaces that line's number. */
+div.astro-code .line.diff::before {
+  content: '+';
+  color: hsl(var(--muted-foreground));
+}
+div.astro-code .line.diff.remove::before {
+  content: '−';
+}
+div.astro-code:has(> .collapse-toggle) > pre {
+  border-radius: 0;
+}
+code-tabs > .code-header {
+  gap: 0.5rem;
+}
+code-tabs > .code-header > .code-tabs-list {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 0.25rem;
+  overflow-x: auto;
+}
+code-tabs .code-tabs-copies {
+  flex: none;
+}
+code-tabs .code-tabs-list > button {
+  appearance: none;
+  box-sizing: border-box;
+  flex: none;
+  height: 2rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: hsl(var(--muted-foreground) / 0.8);
+  font: inherit;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms,
+    color 150ms;
+}
+code-tabs .code-tabs-list > button:hover,
+code-tabs .code-tabs-list > button[aria-selected='true'] {
+  background: var(--code-fill);
+  box-shadow: var(--code-edge);
+  color: hsl(var(--muted-foreground));
+}
+code-tabs .code-tabs-list > button[aria-selected='true'] {
+  font-weight: 600;
+}
+code-tabs .code-tabs-list > button:active {
+  transform: scale(0.95);
+}
+code-tabs .code-tabs-list > button:focus-visible,
+div.astro-code .collapse-toggle:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
+}
+code-tabs > div.astro-code {
+  margin: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  box-shadow: none;
+}
+code-tabs > div.astro-code[hidden],
+code-tabs button.copy[hidden] {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  code-tabs .code-tabs-list > button {
+    transition: none;
+  }
+}

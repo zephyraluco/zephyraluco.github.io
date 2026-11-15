@@ -1,9 +1,9 @@
-import type { CardListData, Config, IntegrationUserConfig, ThemeUserConfig } from 'astro-pure/types'
+import type { CardListData, Config, IntegrationUserConfig, ThemeUserConfig } from './types/site'
 
 export const theme: ThemeUserConfig = {
   // [Basic]
   /** Title for your website. Will be used in metadata and as browser tab title. */
-  title: 'Zeal\' Lab',
+  title: "Zeal' Lab",
   /** Will be used in index page & copyright declaration */
   author: 'Zeal',
   /** Description metadata for your website. Can be used in page metadata. */
@@ -76,7 +76,7 @@ export const theme: ThemeUserConfig = {
       // }
     ],
     /** Enable displaying a “Astro & Pure theme powered” link in your site’s footer. */
-    credits: true,
+    credits: true
     /** Optional details about the social media accounts for this site. */
     // social: [
     //   { icon: 'github', label: 'GitHub', href: 'https://github.com/cworld1/astro-theme-pure' },
@@ -102,26 +102,28 @@ export const theme: ThemeUserConfig = {
 }
 
 export const integ: IntegrationUserConfig = {
-  // [Links]
-  // https://astro-pure.js.org/docs/integrations/links
-
   // [Search]
   pagefind: true,
   // Add a random quote to the footer (default on homepage footer)
-  // See: https://astro-pure.js.org/docs/integrations/advanced#web-content-render
   // [Quote]
   quote: {
     // - Hitokoto
     // https://developer.hitokoto.cn/sentence/#%E8%AF%B7%E6%B1%82%E5%9C%B0%E5%9D%80
     server: 'https://v1.hitokoto.cn/?c=i',
-    target: `(data) => (data.hitokoto || 'Error')`
+    target: (data) => {
+      if (
+        typeof data === 'object' &&
+        data !== null &&
+        'hitokoto' in data &&
+        typeof data.hitokoto === 'string'
+      )
+        return data.hitokoto
+      throw new Error('Unexpected quote response')
+    },
+    fallback: 'Stay hungry, stay foolish'
     // - Quoteable
     // https://github.com/lukePeavey/quotable
     // server: 'http://api.quotable.io/quotes/random?maxLength=60',
-    // target: `(data) => data[0].content || 'Error'`
-    // - DummyJSON
-    // server: 'https://dummyjson.com/quotes/random',
-    // target: `(data) => (data.quote.length > 80 ? \`\${data.quote.slice(0, 80)}...\` : data.quote || 'Error')`
   },
   // [Typography]
   // https://unocss.dev/presets/typography
@@ -134,7 +136,6 @@ export const integ: IntegrationUserConfig = {
   },
   // [Lightbox]
   // A lightbox library that can add zoom effect
-  // https://astro-pure.js.org/docs/integrations/others#medium-zoom
   mediumZoom: {
     enable: true, // disable it will not load the whole library
     selector: '.prose .zoomable',
@@ -187,5 +188,5 @@ export const terms: CardListData = {
   ]
 }
 
-const config = { ...theme, integ } as Config
+const config = { ...theme, integ } satisfies Config
 export default config

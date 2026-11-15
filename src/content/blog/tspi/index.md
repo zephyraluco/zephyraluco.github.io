@@ -9,16 +9,14 @@ tags:
 language: '中文'
 ---
 
-import { Aside } from 'astro-pure/user'
-
 ## 前言
 
 1. 这篇 blog 主要是记录泰山派系统编译及烧录过程
 2. 官方烧录教程：[https://wiki.lckfb.com/zh-hans/tspi-rk3566/system-usage/img-download.html](https://wiki.lckfb.com/zh-hans/tspi-rk3566/system-usage/img-download.html)
 
-<Aside type='danger' title='危险'>
-  烧录armbian系统后，后续将无法进入Loader模式，只能使用MASKROM模式
-</Aside>
+> [!CAUTION]
+>
+> 烧录armbian系统后，后续将无法进入Loader模式，只能使用MASKROM模式
 
 ## armbian 镜像构建
 
@@ -56,10 +54,10 @@ cd armbian
 
 后续按需选择，设置完参数后会自动进行编译，等待完成即可。
 
-<Aside type='caution' title='注意'>
-  如果编译失败则可能是缺少环境导致的，可以运行以下命令: `sudo apt install -y
-  software-properties-common python3-pip`
-</Aside>
+> [!WARNING]
+>
+> 如果编译失败则可能是缺少环境导致的，可以运行以下命令: `sudo apt install -y
+software-properties-common python3-pip`
 
 ## 三方armbian镜像
 
@@ -77,9 +75,9 @@ cd armbian
 
 解压并运行烧录工具，按照官方文档进入Loader/MASKROM模式，选择烧录固件:
 
-<Aside type='caution' title='注意'>
-  进入Loader/MASKROM模式的方法可以参考官方文档，或者直接搜索相关教程
-</Aside>
+> [!WARNING]
+>
+> 进入Loader/MASKROM模式的方法可以参考官方文档，或者直接搜索相关教程
 
 ![alt text](/images/RKDevTool-1.png)
 
@@ -94,6 +92,7 @@ MASKROM模式下烧录可能会出现下载失败的情况，这个时候就需�
 ## 系统配置
 
 1. 删除`/etc/profile`中的PATH设置：
+
 ```shell
 if [ "$(id -u)" -eq 0 ]; then
   PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -104,6 +103,7 @@ export PATH
 ```
 
 2. 修改`/usr/share/vim/vim91/defaults.vim`，禁用vim的鼠标模式 ：
+
 ```shell
 "if has('mouse')
 "  if &term =~ 'xterm'
@@ -115,6 +115,7 @@ export PATH
 ```
 
 3. 先安装`xauth`，然后修改`/etc/ssh/sshd_config`，启用X11转发：
+
 ```shell
 X11Forwarding yes
 X11DisplayOffset 10
@@ -122,6 +123,7 @@ X11UseLocalhost yes
 ```
 
 4. 常用软件安装：
+
 ```shell
 sudo apt install -y vim btop fd-find net-tools systemd-coredump
 ```

@@ -1,0 +1,32 @@
+---
+const { content = Astro.url.href, class: className, ...props } = Astro.props
+---
+
+<div id='qrcode-container' class={className} {...props}>
+  <qr-code data-content={content}></qr-code>
+</div>
+
+<script>
+  import { toCanvas } from 'qrcode'
+
+  class QRCode extends HTMLElement {
+    async connectedCallback() {
+      const canvas = document.createElement('canvas')
+      canvas.setAttribute('role', 'img')
+      canvas.setAttribute('aria-label', 'QR code for this page')
+      try {
+        await toCanvas(canvas, this.dataset.content ?? window.location.href)
+        this.replaceChildren(canvas)
+      } catch {
+        this.textContent = 'QR code unavailable'
+      }
+    }
+  }
+  if (!customElements.get('qr-code')) customElements.define('qr-code', QRCode)
+</script>
+<style>
+  qr-code :global(canvas) {
+    width: 100% !important;
+    height: auto !important;
+  }
+</style>

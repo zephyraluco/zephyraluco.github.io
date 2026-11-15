@@ -36,7 +36,10 @@ node_modules/
 .DS_Store
 old_blog
 ignore.*
-bunfig.toml
 /src/content/blog/test.*
 /test/
 .vscode/
+
+# Browser test outputs
+/test-results/
+/playwright-report/

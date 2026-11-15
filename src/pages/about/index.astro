@@ -1,9 +1,13 @@
 ---
-import { Button, Collapse, Spoiler, Timeline } from 'astro-pure/user'
 import PageLayout from '@/layouts/CommonPage.astro'
+import LinkList from '@/components/about/LinkList.astro'
 import Substats from '@/components/about/Substats.astro'
 import ToolSection from '@/components/about/ToolSection.astro'
-import LinkList from '@/components/about/LinkList.astro'
+
+import Button from '../../components/ui/Button.astro'
+import Collapse from '../../components/ui/Collapse.astro'
+import Spoiler from '../../components/ui/Spoiler.astro'
+import Timeline from '../../components/ui/Timeline.astro'
 
 const headings = [
   { depth: 2, slug: 'tools', text: 'Tools' },
@@ -11,38 +15,38 @@ const headings = [
 ]
 
 const links = {
-  "cf-links": {
-    "id_name": "common-links",
-    "desc": "Common links included in circle friends",
-    "link_list": [
+  'cf-links': {
+    id_name: 'common-links',
+    desc: 'Common links included in circle friends',
+    link_list: [
       {
-        "name": "Arthals' ink",
-        "intro": "所见高山远木，阔云流风；所幸岁月盈余，了无拘束",
-        "link": "https://arthals.ink/",
-        "avatar": "https://cdn.arthals.ink/Arthals.png"
+        name: "Arthals' ink",
+        intro: '所见高山远木，阔云流风；所幸岁月盈余，了无拘束',
+        link: 'https://arthals.ink/',
+        avatar: 'https://cdn.arthals.ink/Arthals.png'
       },
       {
-        "name": "CWorld Site",
-        "intro": "求知若愚，虚怀若谷",
-        "link": "https://cworld0.com/",
-        "avatar": "https://cravatar.cn/avatar/1ffe42aa45a6b1444a786b1f32dfa8aa?s=200"
+        name: 'CWorld Site',
+        intro: '求知若愚，虚怀若谷',
+        link: 'https://cworld0.com/',
+        avatar: 'https://cravatar.cn/avatar/1ffe42aa45a6b1444a786b1f32dfa8aa?s=200'
       }
     ]
   },
-  "inactive-links": {
-    "id_name": "inactive-links",
-    "desc": "Inactive or rule-breaking friends",
-    "link_list": []
+  'inactive-links': {
+    id_name: 'inactive-links',
+    desc: 'Inactive or rule-breaking friends',
+    link_list: []
   },
-  "special": {
-    "id_name": "special-links",
-    "desc": "Other special links",
-    "link_list": [
+  special: {
+    id_name: 'special-links',
+    desc: 'Other special links',
+    link_list: [
       {
-        "name": "Astro",
-        "intro": "The web framework for content-driven websites",
-        "link": "https://astro.build/",
-        "avatar": "https://avatars.githubusercontent.com/u/44914786?s=200&v=4"
+        name: 'Astro',
+        intro: 'The web framework for content-driven websites',
+        link: 'https://astro.build/',
+        avatar: 'https://avatars.githubusercontent.com/u/44914786?s=200&v=4'
       }
     ]
   }
@@ -52,7 +56,8 @@ const links = {
 <PageLayout title='About' {headings} comment>
   <p>C++ / Rust Developer</p>
   <p>
-    目前从事机器人相关的软件开发工作，主要使用 C++ 和 Rust 语言，兴趣包括 robotics、 system optimization。
+    目前从事机器人相关的软件开发工作，主要使用 C++ 和 Rust 语言，兴趣包括 robotics、 system
+    optimization。
   </p>
   <!-- <p>
     Motto: Stay hungry, Stay foolish. <Spoiler>这里可以夹私货，比如为什么要演奏春日影！</Spoiler>
@@ -143,9 +148,7 @@ const links = {
 
   {/* social-networks */}
   <h2 id='social-networks'>Social Networks</h2>
-  <p>
-    主要平台如下:
-  </p>
+  <p>主要平台如下:</p>
   <Substats
     stats={[
       {

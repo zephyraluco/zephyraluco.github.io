@@ -1,9 +1,8 @@
 ---
 import { Font } from 'astro:assets'
 
-import { prod } from 'astro-pure/server'
-import type { SiteMeta } from 'astro-pure/types'
-import config from 'virtual:config'
+import config from '../config/index'
+import type { SiteMeta } from '../types/site'
 
 type Props = SiteMeta
 
@@ -15,7 +14,10 @@ const socialImageURL = new URL(ogImage ? ogImage : config.socialCard, Astro.url)
 ---
 
 <meta charset='utf-8' />
-<meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover' name='viewport' />
+<meta
+  content='width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover'
+  name='viewport'
+/>
 <meta content='IE=edge' http-equiv='X-UA-Compatible' />
 <title>{siteTitle}</title>
 
@@ -57,14 +59,12 @@ const socialImageURL = new URL(ogImage ? ogImage : config.socialCard, Astro.url)
 <meta content={socialImageURL} property='og:image' />
 <meta content='1200' property='og:image:width' />
 <meta content='630' property='og:image:height' />
-{
-  articleDate && (
-    <>
-      <meta content={config.author} property='article:author' />
-      <meta content={articleDate} property='article:published_time' />
-    </>
-  )
-}
+{articleDate && (
+  <>
+    <meta content={config.author} property='article:author' />
+    <meta content={articleDate} property='article:published_time' />
+  </>
+)}
 
 {/* Twitter */}
 <meta content='summary_large_image' property='twitter:card' />
@@ -85,14 +85,3 @@ const socialImageURL = new URL(ogImage ? ogImage : config.socialCard, Astro.url)
 />
 
 <meta content={Astro.generator} name='generator' />
-
-{
-  /* User script*/
-  prod && (
-    <script>
-      console.log( '%c Astro Theme Pure %c https://github.com/cworld1/astro-theme-pure/',
-      'color:#fff;background:linear-gradient(90deg,#448bff,#44e9ff);padding:5px 0;',
-      'color:#000;background:linear-gradient(90deg,#44e9ff,#ffffff);padding:5px 10px 5px 0px;' )
-    </script>
-  )
-}

@@ -2,11 +2,13 @@
 import type { GetStaticPaths, Page } from 'astro'
 import type { CollectionEntry } from 'astro:content'
 
-import { Paginator, PostPreview } from 'astro-pure/components/pages'
-import { getBlogCollection, getUniqueTags, sortMDByDate } from 'astro-pure/server'
-import { Button } from 'astro-pure/user'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import config from '@/site-config'
+
+import Paginator from '../../../components/content/Paginator.astro'
+import PostPreview from '../../../components/content/PostPreview.astro'
+import Button from '../../../components/ui/Button.astro'
+import { getBlogCollection, getUniqueTags, sortMDByDate } from '../../../lib/content'
 
 export const prerender = true
 
@@ -64,7 +66,9 @@ const paginationProps = {
 
     <section id='content' class='animate' aria-label='Blog post list'>
       <ul class='flex flex-col gap-y-3 text-start'>
-        {page.data.map((post) => <PostPreview {post} detailed />)}
+        {page.data.map((post) => (
+          <PostPreview {post} detailed />
+        ))}
       </ul>
       <Paginator {...paginationProps} />
     </section>

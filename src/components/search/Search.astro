@@ -1,0 +1,64 @@
+---
+import '@pagefind/default-ui/css/ui.css'
+---
+
+<site-search>
+  <aside class='form my-4'>
+    {import.meta.env.DEV ? (
+      <div class='w-full rounded-xl border-2 bg-transparent px-4 py-2 pe-3 outline-none focus:border-foreground'>
+        You are in Dev mode, the search is disabled.
+      </div>
+    ) : (
+      <div id='site-search' />
+    )}
+  </aside>
+</site-search>
+
+<script>
+  import type { PagefindUI } from '@pagefind/default-ui'
+
+  const formatURL = (path: string) => path.replace(/(.)\/(#.*)?$/, '$1$2')
+
+  class SiteSearch extends HTMLElement {
+    private search?: PagefindUI
+
+    async connectedCallback() {
+      if (import.meta.env.DEV || !this.querySelector('#site-search')) return
+      const { PagefindUI } = await import('@pagefind/default-ui')
+      if (!this.isConnected) return
+      this.search = new PagefindUI({
+        element: '#site-search',
+        baseUrl: import.meta.env.BASE_URL,
+        bundlePath: `${import.meta.env.BASE_URL.replace(/\/$/, '')}/pagefind/`,
+        showImages: false,
+        showSubResults: true,
+        processResult: (result) => ({
+          ...result,
+          url: formatURL(result.url),
+          sub_results: result.sub_results.map((item) => ({ ...item, url: formatURL(item.url) }))
+        })
+      })
+    }
+
+    disconnectedCallback() {
+      this.search?.destroy()
+    }
+  }
+  if (!customElements.get('site-search')) customElements.define('site-search', SiteSearch)
+</script>
+
+<style>
+  #site-search {
+    --pagefind-ui-scale: 0.8;
+    --pagefind-ui-primary: hsl(var(--primary) / var(--un-bg-opacity, 1));
+    --pagefind-ui-text: hsl(var(--foreground) / var(--un-text-opacity, 1));
+    --pagefind-ui-background: hsl(var(--muted) / var(--un-bg-opacity, 1));
+    --pagefind-ui-border: hsl(var(--border) / var(--un-border-opacity, 1));
+    --pagefind-ui-tag: hsl(var(--muted-foreground) / var(--un-text-opacity, 1));
+    --pagefind-ui-border-width: 2px;
+    --pagefind-ui-border-radius: calc(var(--radius) + 2px);
+    --pagefind-ui-image-border-radius: calc(var(--radius) + 2px);
+    --pagefind-ui-image-box-ratio: 3 / 2;
+    --pagefind-ui-font: sans-serif;
+  }
+</style>
